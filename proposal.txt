@@ -1,3 +1,26 @@
 Proposal - Lee, Drew, Andrew
-Classification using the IMDb review database
+Classification using the travel review database
+(worded separately in Google Docs - commit copy-pasted to here)
 
+NLP Project Proposal - Classification of Reviews
+Lee, Drew, and Andrew
+
+	Of the three NLP problem types listed, our group chose the classification type, where the user will upload a dataset 
+    and our program will predict labels to classify those documents with. The domain we chose is in reviews, because we 
+    would like to implement a feature that also sorts the reviews based on positive or negative, keywords, and other features. 
+    For the specific dataset, we chose Recipe Reviews and User Feedback. 
+    (https://archive.ics.uci.edu/dataset/911/recipe+ reviews+and+user+feedback+dataset)  
+    This dataset provides us with a review number, recipe number, recipe code, recipe name, comment ID, user ID, username, 
+    user reputation, created at, reply count, thumbs up count, thumbs down count, best review score, review number of stars, 
+    and the actual review text. By using the review stars, the text content of the review, and the amount of thumbs up/thumbs 
+    down on the review, we can present the user with sorted reviews by whether they were positive or negative as well as how 
+    popular each review was. We chose the review domain because it seemed the most interesting to us, and it’s sometimes 
+    annoying to scroll through reviews on a website because reviews on the website can be skewed or have spam to look past.
+
+
+
+UML Diagram: https://lucid.app/lucidchart/38a4b104-0874-486c-a98e-09707386e38c/edit?viewport_loc=39%2C-113%2C2469%2C1416%2CHWEp-vi-RSFO&invitationId=inv_6f1c1b53-8906-4cd7-8a97-8d115c6fdf36
+
+Still need:
+-key features implemented
+-UML diagram

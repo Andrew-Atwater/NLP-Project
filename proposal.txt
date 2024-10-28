@@ -1,0 +1,3 @@
+Proposal - Lee, Drew, Andrew
+Classification using the IMDb review database
+

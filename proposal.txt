@@ -10,7 +10,7 @@ Lee, Drew, and Andrew
     would like to implement a feature that not only predicts whether your review input is positive or negative, but can also 
     compare that review to the weighted average of all other reviews on that recipe in the database (weight assigned based on 
     thumbs up/thumbs down for each review). For the specific dataset, we chose Recipe Reviews and User Feedback. 
-    (https://archive.ics.uci.edu/dataset/911/recipe+reviews+and+user+feedback +dataset)  
+    (https://archive.ics.uci.edu/dataset/911/recipe+reviews+and+user+feedback+dataset)  
     This dataset provides us with a review number, recipe number, recipe code, recipe name, comment ID, user ID, username, 
     user reputation, created at, reply count, thumbs up count, thumbs down count, best review score, review number of stars, 
     and the actual review text. The only information we’ll need to pull from this database to train our program will be the 

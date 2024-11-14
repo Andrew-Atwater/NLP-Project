@@ -15,6 +15,7 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+pass.txt
 
 *.DS_Store
 *.zip

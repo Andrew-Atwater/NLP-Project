@@ -32,5 +32,28 @@ public class Recipe {
         return reviewText;
     }
 
+   public void setRecipeName(String recipeName) {
+       this.recipeName = recipeName;
+   }
 
+   public void setThumbDownCount(Float thumbDownCount) {
+       this.thumbDownCount = thumbDownCount;
+   }
+
+   public void setThumbUpCount(Float thumbUpCount) {
+       this.thumbUpCount = thumbUpCount;
+   }
+
+    public void setReviewText(String reviewText) {
+        this.reviewText = reviewText;
+   }
+
+    public Document getDocument() {
+        Document document = new Document();
+        document.append("recipe_name", recipeName);
+        document.append("thumbs_up", thumbUpCount);
+        document.append("thumbs_down", thumbDownCount);
+        document.append("text", reviewText);
+        return document;
+    }
 }

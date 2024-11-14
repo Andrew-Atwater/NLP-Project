@@ -1,4 +1,4 @@
-package com..recipe;
+package com.system.package1.recipeapp;
 
 import org.bson.Document;
 
@@ -32,5 +32,5 @@ public class Recipe {
         return reviewText;
     }
 
-    
+
 }

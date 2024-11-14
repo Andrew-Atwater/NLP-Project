@@ -1,4 +1,4 @@
-package com.system.package1.recipeapp;
+package com.recipeapp.recipe;
 
 import org.bson.Document;
 

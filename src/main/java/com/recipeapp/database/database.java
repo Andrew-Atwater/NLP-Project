@@ -89,7 +89,8 @@ public class Database {
 
     public Database(String dbName, String collectionName) {
         // Write your own connection string here!
-        this.connectionString = readFile();
+        //this.connectionString = readFile();
+        this.connectionString = "mongodb+srv://lee12:pass2026@cos225-nlp.4yugd.mongodb.net/?retryWrites=true&w=majority&appName=COS225-NLP";
         this.databaseName = dbName;
         this.collectionName = collectionName;
     }

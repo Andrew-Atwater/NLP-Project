@@ -19,7 +19,7 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
+        Database recipeDatabase = new Database("recipe_reviews", "bulk _data");
         recipeDatabase.createCollection();
 
         // Parse test_recipe_metadata.csv
@@ -33,7 +33,7 @@ public class Menu {
 
             while ((line = br.readLine()) != null) {
                 String[] recipeData = line.split(delimiter);
-                String recipeNames = recipeData[1];
+                String recipeNames = recipeData[0];
                 Integer thumbsUp = Integer.parseInt(recipeData[1]);
                 Integer thumbsDown = Integer.parseInt(recipeData[2]);
                 String reviewContent = recipeData[3];
@@ -53,7 +53,7 @@ public class Menu {
      */
     public void shutDown() {
 
-        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
+        Database recipeDatabase = new Database("recipe_reviews", "bulk_data");
         recipeDatabase.deleteCollection();
 
     }

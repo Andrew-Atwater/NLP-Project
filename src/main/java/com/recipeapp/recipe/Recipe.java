@@ -5,11 +5,11 @@ import org.bson.Document;
 public class Recipe {
 
     private String recipeName;
-    private Float thumbUpCount;
-    private Float thumbDownCount;
+    private Integer thumbUpCount;
+    private Integer thumbDownCount;
     private String reviewText;
 
-    public Recipe(String recipeName, Float thumbUpCount, Float thumbDownCount, String reviewText) {
+    public Recipe(String recipeName, Integer thumbUpCount, Integer thumbDownCount, String reviewText) {
         this.recipeName = recipeName;
         this.thumbUpCount = thumbUpCount;
         this.thumbDownCount =  thumbDownCount;
@@ -20,11 +20,11 @@ public class Recipe {
         return recipeName;
     }
     
-    public float getThumbUpCount(){
+    public Integer getThumbUpCount(){
         return thumbUpCount;
     }
 
-    public float getThumbDownCount(){
+    public Integer getThumbDownCount(){
         return thumbDownCount;
     }
 
@@ -36,11 +36,11 @@ public class Recipe {
        this.recipeName = recipeName;
    }
 
-   public void setThumbDownCount(Float thumbDownCount) {
+   public void setThumbDownCount(Integer thumbDownCount) {
        this.thumbDownCount = thumbDownCount;
    }
 
-   public void setThumbUpCount(Float thumbUpCount) {
+   public void setThumbUpCount(Integer thumbUpCount) {
        this.thumbUpCount = thumbUpCount;
    }
 

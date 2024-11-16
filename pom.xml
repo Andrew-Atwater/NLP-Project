@@ -4,11 +4,11 @@
 
     <groupId>org.cos225</groupId>
     <artifactId>RecipeApp</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.4</version>
 
     <properties>
-        <maven.compiler.source>22</maven.compiler.source>
-        <maven.compiler.target>22</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
     </properties>
 
 
@@ -19,5 +19,7 @@
             <version>4.4.0</version>
         </dependency>
     </dependencies>
+
+
 
 </project>

@@ -22,12 +22,12 @@ public class Menu {
         Database recipeDatabase = new Database("recipe_reviews", "bulk _data");
         recipeDatabase.createCollection();
 
-        // Parse test_recipe_metadata.csv
-        String csvFile = "src/main/resources/test_recipe_metadata.csv";
+        // Parse test_recipe_metadata.txt
+        String txtFile = "src/main/resources/test_recipe_metadata.txt";
         String line;
-        String delimiter = ",";
+        String delimiter = "#";
 
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(txtFile))) {
             // Skip the first header line
             br.readLine();
 

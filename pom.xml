@@ -2,7 +2,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.cos225</groupId>
+    <groupId>com.recipeapp.menu</groupId>
     <artifactId>RecipeApp</artifactId>
     <version>0.0.4</version>
 

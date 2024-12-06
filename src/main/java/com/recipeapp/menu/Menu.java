@@ -3,6 +3,7 @@ package com.recipeapp.menu;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Scanner;
 
 import com.recipeapp.database.Database;
@@ -19,7 +20,7 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_reviews", "bulk _data");
+        Database recipeDatabase = new Database("recipe_reviews", "recipe_data");
         recipeDatabase.createCollection();
 
         // Parse test_recipe_metadata.txt
@@ -27,25 +28,29 @@ public class Menu {
         String line;
         String delimiter = "#";
 
+        int lineCounter = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(txtFile))) {
             // Skip the first header line
             br.readLine();
-
+            lineCounter++;
             while ((line = br.readLine()) != null) {
-                String[] recipeData = line.split(delimiter);
-                String recipeNames = recipeData[0];
-                Integer thumbsUp = Integer.parseInt(recipeData[1]);
-                Integer thumbsDown = Integer.parseInt(recipeData[2]);
-                String reviewContent = recipeData[3];
-                
-
-                Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
-                recipeDatabase.addToDatabase(recipeObject.getDocument());
+                try {
+                    lineCounter++;
+                    String[] recipeData = line.split(delimiter);
+                    String recipeNames = recipeData[0];
+                    Integer thumbsUp = Integer.parseInt(recipeData[1]);
+                    Integer thumbsDown = Integer.parseInt(recipeData[2]);
+                    String reviewContent = recipeData[3];
+                    // System.out.println(line);
+                    Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
+                    recipeDatabase.addToDatabase(recipeObject.getDocument());
+                } catch (ArrayIndexOutOfBoundsException e ){
+                    System.out.println("Encountered issue on line "+ lineCounter +"."); //error catch statement
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
+        } 
     }
 
     /*
@@ -53,7 +58,7 @@ public class Menu {
      */
     public void shutDown() {
 
-        Database recipeDatabase = new Database("recipe_reviews", "bulk_data");
+        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteCollection();
 
     }

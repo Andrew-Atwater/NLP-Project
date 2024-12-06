@@ -20,7 +20,7 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_reviews", "bulk _data");
+        Database recipeDatabase = new Database("recipe_reviews", "recipe_data");
         recipeDatabase.createCollection();
 
         // Parse test_recipe_metadata.txt
@@ -43,9 +43,9 @@ public class Menu {
                     String reviewContent = recipeData[3];
                     // System.out.println(line);
                     Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
-                    // recipeDatabase.addToDatabase(recipeObject.getDocument());
+                    recipeDatabase.addToDatabase(recipeObject.getDocument());
                 } catch (ArrayIndexOutOfBoundsException e ){
-                    System.out.println("Encountered issue on line "+ lineCounter +".");
+                    System.out.println("Encountered issue on line "+ lineCounter +"."); //error catch statement
                 }
             }
         } catch (IOException e) {
@@ -58,7 +58,7 @@ public class Menu {
      */
     public void shutDown() {
 
-        Database recipeDatabase = new Database("recipe_reviews", "bulk_data");
+        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteCollection();
 
     }

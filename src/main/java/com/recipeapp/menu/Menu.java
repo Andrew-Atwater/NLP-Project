@@ -3,7 +3,7 @@ package com.recipeapp.menu;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Serial;
+// import java.io.Serial;
 import java.util.Scanner;
 
 import com.recipeapp.database.Database;
@@ -92,13 +92,55 @@ public class Menu {
 
     }
 
+
+    // Method to find reviews for a  specific recipe
     public void findRecipeOtherReviews() {
+        String recipeFile = "src/main/resources/test_recipe_metadata.txt";  
+        String line;
+        String delimiter = "#"; 
 
-        // COde to print all other reviews for a specific recipeName goes here
-        //ALso ask user about which recipe they want.
-        
-        System.out.println("Pretend this is your reviews information");
+        // Scanner to get the recipe name from user input
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Please enter the name of the recipe to search for: ");
+        String recipeSearchName = scanner.nextLine();  // Read the recipe name input by the user
+        System.out.println("Searching for " + recipeSearchName + "...\n");
 
+        try (BufferedReader br = new BufferedReader(new FileReader(recipeFile))) {
+            // Skip the first header line if present (assuming the first line is a header)
+            br.readLine();
+            
+            int reviewCounter = 1;
+            // Loop through each line in the file
+            boolean foundRecipe = false;
+            while ((line = br.readLine()) != null) {
+                // Split the line by the delimiter "#"
+                String[] recipeData = line.split(delimiter);
+                
+                // Check if the line contains at least four elements (recipe name, thumbs up, thumbs down, and review text)
+                if (recipeData.length >= 4) {
+                    String recipeName = recipeData[0].strip();
+                    // Compare the input recipe name with the recipe name from the file 
+                    if (recipeSearchName.equalsIgnoreCase(recipeName)) {
+                        if (foundRecipe == true) {
+                            System.out.println("Here are the reviews for " + recipeName + ":\n");
+                            foundRecipe = true; 
+                        }
+                        // Print review text
+                        System.out.println("Review " + reviewCounter + ": "+ recipeData[3].trim() + "\n");
+                        reviewCounter++;
+                    }
+                }
+            }
+
+            // If no recipe was found by the name
+            if (!foundRecipe) {
+                System.out.println("Recipe not found!");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }scanner.close();       
+    
     }
 
     public static void main(String[] args) {

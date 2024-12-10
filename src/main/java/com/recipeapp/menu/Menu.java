@@ -3,7 +3,7 @@ package com.recipeapp.menu;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Serial;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import com.recipeapp.database.Database;
@@ -20,7 +20,7 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_reviews", "recipe_data");
+        Database recipeDatabase = new Database("recipe_reviews", "review_data");
         recipeDatabase.createCollection();
 
         // Parse test_recipe_metadata.txt
@@ -87,11 +87,63 @@ public class Menu {
 
         // COde to print all reviews information goes here, as well as weighted average review for Recipe
         //ALso ask user about which recipe they want, tell them avergae thumbs count, and % up or down, etc.
+        String txtFile = "test_recipe_metadata.txt";
+        String line;
+        String delimiter = "#";
+        String recipeChoice;
+        ArrayList<String[]> recipeChoiceData = new ArrayList<>();
+        try(Scanner scanner = new Scanner(System.in)){
+            System.out.println("Please enter the recipe you would like to see reviews for: ");
+            recipeChoice = scanner.nextLine();
+            int lineCounter = 0;
+            try(BufferedReader br = new BufferedReader(new FileReader(txtFile))){
+                while((line = br.readLine()) != null)
+                    try {
+                        lineCounter++;
+                        String[] recipeData = line.split(delimiter);
+                        if(recipeData[0].equals(recipeChoice)){
+                            recipeChoiceData.add(recipeData);
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("Out of bounds at line: " + lineCounter + ", error occurred");
+                    }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Please select what you would like to see from the " + recipeChoice + " recipe from the menu by choosing an integer associated with each option: \n1.) Select reveiw content to review\n2.) See the thumbs up/down count and average data\n3.) Return to main menu.");
+            int menuChoice = scanner.nextInt();
+            switch(menuChoice){
+                case 1:
+                    seeReviews(recipeChoiceData);
+                case 2:
+                    seeThumbsData(recipeChoiceData);
+                case 3:
+                    //call main menu function
+            }
+        }
         
-        System.out.println("Pretend this is your recipe information");
 
     }
+    public void seeReviews(ArrayList<String[]> recipeChoiceData) {
+        String choice = "y";
+        try(Scanner scanner = new Scanner(System.in)){
+            System.out.println("Review text will now be presented for the recipe you have selected. Input 'y' to see the next review for the recipe, or any other letter to return to the menu.");
+            while(choice.equals("y"))
+                try {
+                    for(String[] recipe : recipeChoiceData){
+                        System.out.println(recipe[3] + "\nPlease enter 'y' to see another review, or any other key to exit to the menu.");
+                        choice = scanner.nextLine();
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    System.out.println("Ran out of review text. Returning to main menu.");
+                    //call menu function
+                }
+            //call menu function
+        }
+    }
+    public void seeThumbsData(ArrayList<String[]> recipeChoiceData){
 
+    }
     public void findRecipeOtherReviews() {
 
         // COde to print all other reviews for a specific recipeName goes here

@@ -157,13 +157,14 @@ public class Menu {
         int lineCounter;
         int goodWordCount = 0;
         int badWordCount = 0;
-        String[] review;
+        int numReviews = recipeChoiceData.size();
         try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
             lineCounter = 0;
             while((line = br.readLine()) != null)
                 try {
-                    for(review : ){
-                        String reviewWords = recipeChoiceData.get(lineCounter)[3];
+                    lineCounter++;
+                    for(String[] review : recipeChoiceData){
+                        String reviewWords = review[3];
                         if(reviewWords.contains(line)){
                         goodWordCount += 1;
                         }
@@ -177,9 +178,29 @@ public class Menu {
         }
         
         try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
-            //copy from goodFile code fragment
+            lineCounter = 0;
+            while((line = br.readLine()) != null)
+                try {
+                    lineCounter++;
+                    for(String[] review : recipeChoiceData){
+                        String reviewWords = review[3];
+                        if(reviewWords.contains(line)){
+                        badWordCount += 1;
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
+                }
         } catch (IOException e) {
             System.out.println("Problem reading file. Sending you back to the menu...");
+            mainMenu();
+        }
+        int numNeutralReviews = numReviews - (goodWordCount + badWordCount);
+        if((goodWordCount - badWordCount) >= 2){
+            System.out.println("This recipe is tasty - there are " + goodWordCount + " reviews that are positive, " 
+                                + badWordCount + " reviews that are negative, and "
+                                + numNeutralReviews + " that are neutral, or could not be detected as negative or positive.");
+            System.out.println("Sending you back to the menu...");
             mainMenu();
         }
     }

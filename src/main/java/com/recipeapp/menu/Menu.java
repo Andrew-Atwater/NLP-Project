@@ -120,7 +120,8 @@ public class Menu {
                                 +" recipe from the menu by choosing an integer associated with each option:" 
                                 +"\n1.) Select reveiw content to review"
                                 +"\n2.) See the thumbs up/down count and average data"
-                                +"\n3.) Return to main menu.");
+                                +"\n3.) See whether this is a good or bad recipe based on the reviews"
+                                +"\n4.) Return to main menu.");
             int menuChoice = scanner.nextInt();
             switch(menuChoice){
                 case 1:
@@ -131,12 +132,13 @@ public class Menu {
                     System.out.println("Counting thumbs...");
                     seeThumbsData(recipeChoiceData);
                     break;
-                case 3:
+                case 3: //come back and fix this
                     System.out.println("Sending you back to the menu...");
                     mainMenu();
                     break;
                 default:
                     System.out.println("Invalid choice! Sending you back to the menu...");
+                    mainMenu();
                     break;
             }
         }
@@ -151,6 +153,7 @@ public class Menu {
             while(choice.equals("y"))
                 try {
                     for(String[] recipe : recipeChoiceData){
+                        //implement NLP: see whether the current review is good or bad
                         System.out.println(recipe[3] + "\nPlease enter 'y' to see another review, "
                                             +"or any other key to exit to the menu.");
                         choice = scanner.nextLine();
@@ -163,16 +166,41 @@ public class Menu {
         }
     }
     public void seeThumbsData(ArrayList<String[]> recipeChoiceData){
-
+        System.out.println("Presenting total thumbs up/down count for all reviews for the selected recipe, " 
+                            +"as well as weighted average rating based on thumbs up count...");
+        int thumbUpCount = 0;
+        int thumbDownCount = 0;
+        for(String[] review : recipeChoiceData){
+            thumbUpCount += Integer.parseInt(review[1]);
+            thumbDownCount += Integer.parseInt(review[2]);
+        }
+        System.out.println("Total thumbs up count for all reviews for the " + recipeChoiceData.get(0)[0] + " recipe:"
+                            +"\n" + thumbUpCount
+                            +"\nTotal thumbs down: "
+                            +"\n" + thumbDownCount);
+        int totalThumbs = thumbUpCount + thumbDownCount;
+        //if the total thumb count on a review is less than 2, discount it
+        thumbUpCount = 0;
+        thumbDownCount = 0;
+        int up = 0;
+        int down = 0;
+        for(String[] review : recipeChoiceData){
+            up = Integer.parseInt(review[1]);
+            down = Integer.parseInt(review[2]);
+            if(up + down >= 2){
+                thumbUpCount += up;
+                thumbDownCount += down;
+            }
+        }
+        double positiveRatedPct = (thumbUpCount / totalThumbs) * 100;
+        double negativeRatedPct = (thumbDownCount / totalThumbs) * 100;
+        double neutralRatedPct = ((thumbUpCount + thumbDownCount) / totalThumbs) * 100;
+        System.out.println("The percentage of positively rated reviews is: " + positiveRatedPct
+                            +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
+                            +"\nThe percentage of neutrally rated reviews"
+                            +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
     }
-    public void findRecipeOtherReviews() {
 
-        // COde to print all other reviews for a specific recipeName goes here
-        //ALso ask user about which recipe they want.
-        
-        System.out.println("Pretend this is your reviews information");
-
-    }
 
     public void mainMenu(){
         try(Scanner scanner = new Scanner(System.in)){

@@ -3,13 +3,8 @@ package com.recipeapp.menu;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Serial;
 import java.util.Scanner;
-import java.util.concurrent.Flow.Publisher;
 
-import org.bson.Document;
-
-import com.mongodb.client.result.DeleteResult;
 import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
 
@@ -24,7 +19,7 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_reviews", "recipe_data");
+        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.createCollection();
 
         // Parse test_recipe_metadata.txt
@@ -65,7 +60,7 @@ public class Menu {
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteAllDocuments();
         recipeDatabase.deleteCollection();
-        System.out.println("Trying to delete...");
+        // System.out.println("Trying to delete...");
 
     }
 

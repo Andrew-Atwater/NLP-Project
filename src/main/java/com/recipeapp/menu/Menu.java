@@ -5,7 +5,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.Flow.Publisher;
 
+import org.bson.Document;
+
+import com.mongodb.client.result.DeleteResult;
 import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
 
@@ -62,7 +66,9 @@ public class Menu {
     public void shutDown() {
 
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
+        recipeDatabase.deleteAllDocuments();
         recipeDatabase.deleteCollection();
+        System.out.println("Trying to delete...");
 
     }
 

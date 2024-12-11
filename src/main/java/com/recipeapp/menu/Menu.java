@@ -153,6 +153,41 @@ public class Menu {
 
     }
 
+    public void mainMenu(){
+        try(Scanner scanner = new Scanner(System.in)){
+            System.out.println("Hello! Welcome to the recipe app!");
+        
+            System.out.println("Please select one of the following options:"
+                            +"\n1.) Add a recipe review to the database."
+                            +"\n2.) Get details of a recipe from the database."
+                            +"\n3.) Find other reviews for the recipe."
+                            +"\n4.) Exit the app");
+            
+            int menuChoice = scanner.nextInt();
+
+            switch(menuChoice){
+                case 1:
+                    System.out.println("Getting recipe add function...");
+                    addRecipeToDatabase();
+                    break;
+                case 2:
+                    System.out.println("Getting print recipe data function...");
+                    printRecipeFromDatabase();
+                    break;
+                case 3:
+                    //do we need this case? print recipe allows this function from within
+                case 4:
+                    System.out.println("Thank you for using the recipe app!");
+                    shutDown();
+                    break;
+                default:
+                    System.out.println("Invalid choice! Please try again. Resetting menu...");
+                    mainMenu();
+                    break;
+            }
+
+        }
+    }
     public static void main(String[] args) {
 
         System.out.println("Initializing the recipe app...");
@@ -160,49 +195,9 @@ public class Menu {
         //Call the startUp method
         Menu menu = new Menu();
         menu.startUp();
-        
+        menu.mainMenu();
         // Ideally you want to make this menu an endless loop until the user enters to exit the app.
         // When they select the option, you call the shutDown method.
-        System.out.println("Hello! Welcome to the recipe app!");
-        
-        System.out.println("Please select one of the following options ");
-        System.out.println("1. Add a recipe review to the database.");
-        System.out.println("2. Get details of a recipe from the database.");
-        System.out.println("3. Find other reviews for the recipe.");
-        System.out.println("4. Exit.");
-
-        System.out.print("Enter you choice: ");
-
-        try (Scanner scanner = new Scanner(System.in)) {
-            int choice = scanner.nextInt();
-
-            switch (choice) {
-                case 1:
-                    System.out.println("Adding recipe reviews...");
-                    menu.addRecipeToDatabase();
-                    break;
-
-                case 2:
-                    System.out.println("Reading a recipe from the database");
-                    menu.printRecipeFromDatabase();
-                    break;
-
-                case 3:
-                    System.out.println("Finding similar recipe reviews...");
-                    menu.findRecipeOtherReviews();
-                    break;
- 
-                case 4:
-                    System.out.println("Exiting the recipe app...");
-                    menu.shutDown();
-                    break;  
-
-                default:
-                    System.out.println("Invalid choice.");
-                    break;
-            }
-        }
-
 
     }
 }

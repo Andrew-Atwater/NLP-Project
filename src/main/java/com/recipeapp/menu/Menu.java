@@ -45,11 +45,14 @@ public class Menu {
                     Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
                     recipeDatabase.addToDatabase(recipeObject.getDocument());
                 } catch (ArrayIndexOutOfBoundsException e ){
-                    System.out.println("Encountered issue on line "+ lineCounter +"."); //error catch statement
+                    System.out.println("Encountered issue on line "+ lineCounter 
+                                        +". Sending you back to the main menu...");
+                    mainMenu();
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("IOException occurred. Sending you back to the main menu...");
+            mainMenu();
         } 
     }
 
@@ -105,20 +108,36 @@ public class Menu {
                             recipeChoiceData.add(recipeData);
                         }
                     } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Out of bounds at line: " + lineCounter + ", error occurred");
+                        System.out.println("Out of bounds at line: " + lineCounter + ", error occurred."
+                                            +"Sending you back to the main menu...");
+                        mainMenu();
                     }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("IOException occurred. Sending you back to the main menu...");
+                mainMenu();
             }
-            System.out.println("Please select what you would like to see from the " + recipeChoice + " recipe from the menu by choosing an integer associated with each option: \n1.) Select reveiw content to review\n2.) See the thumbs up/down count and average data\n3.) Return to main menu.");
+            System.out.println("Please select what you would like to see from the " + recipeChoice  
+                                +" recipe from the menu by choosing an integer associated with each option:" 
+                                +"\n1.) Select reveiw content to review"
+                                +"\n2.) See the thumbs up/down count and average data"
+                                +"\n3.) Return to main menu.");
             int menuChoice = scanner.nextInt();
             switch(menuChoice){
                 case 1:
+                    System.out.println("Collecting review content...");
                     seeReviews(recipeChoiceData);
+                    break;
                 case 2:
+                    System.out.println("Counting thumbs...");
                     seeThumbsData(recipeChoiceData);
+                    break;
                 case 3:
-                    //call main menu function
+                    System.out.println("Sending you back to the menu...");
+                    mainMenu();
+                    break;
+                default:
+                    System.out.println("Invalid choice! Sending you back to the menu...");
+                    break;
             }
         }
         
@@ -127,18 +146,20 @@ public class Menu {
     public void seeReviews(ArrayList<String[]> recipeChoiceData) {
         String choice = "y";
         try(Scanner scanner = new Scanner(System.in)){
-            System.out.println("Review text will now be presented for the recipe you have selected. Input 'y' to see the next review for the recipe, or any other letter to return to the menu.");
+            System.out.println("Review text will now be presented for the recipe you have selected." 
+                                +"Input 'y' to see the next review for the recipe, or any other letter to return to the menu.");
             while(choice.equals("y"))
                 try {
                     for(String[] recipe : recipeChoiceData){
-                        System.out.println(recipe[3] + "\nPlease enter 'y' to see another review, or any other key to exit to the menu.");
+                        System.out.println(recipe[3] + "\nPlease enter 'y' to see another review, "
+                                            +"or any other key to exit to the menu.");
                         choice = scanner.nextLine();
                     }
                 } catch (IndexOutOfBoundsException e) {
                     System.out.println("Ran out of review text. Returning to main menu.");
-                    //call menu function
+                    mainMenu();
                 }
-            //call menu function
+            mainMenu();
         }
     }
     public void seeThumbsData(ArrayList<String[]> recipeChoiceData){
@@ -196,8 +217,8 @@ public class Menu {
         Menu menu = new Menu();
         menu.startUp();
         menu.mainMenu();
-        // Ideally you want to make this menu an endless loop until the user enters to exit the app.
-        // When they select the option, you call the shutDown method.
+        // Ideally you want to make this menu an endless loop until the user enters to exit the app. (done)
+        // When they select the option, you call the shutDown method. (done)
 
     }
 }

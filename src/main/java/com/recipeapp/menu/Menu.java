@@ -118,7 +118,7 @@ public class Menu {
             }
             System.out.println("Please select what you would like to see from the " + recipeChoice  
                                 +" recipe from the menu by choosing an integer associated with each option:" 
-                                +"\n1.) Select reveiw content to review"
+                                +"\n1.) Scroll through reviews"
                                 +"\n2.) See the thumbs up/down count and average data"
                                 +"\n3.) See whether this is a good or bad recipe based on the reviews"
                                 +"\n4.) Return to main menu.");
@@ -132,7 +132,11 @@ public class Menu {
                     System.out.println("Counting thumbs...");
                     seeThumbsData(recipeChoiceData);
                     break;
-                case 3: //come back and fix this
+                case 3:
+                    System.out.println("Determining recipe tastiness...");
+                    getRecipeTastiness(recipeChoiceData);
+                    break;
+                case 4:
                     System.out.println("Sending you back to the menu...");
                     mainMenu();
                     break;
@@ -145,6 +149,38 @@ public class Menu {
         
 
     }
+
+    public void getRecipeTastiness(ArrayList<String[]> recipeChoiceData){
+        String goodFile = "goodWords.txt";
+        String badFile = "badWords.txt";
+        String line;
+        int lineCounter;
+        int goodWordCount;
+        int badWordCount;
+        try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
+            lineCounter = 0;
+            while((line = br.readLine()) != null)
+                try {
+                    String reviewWords = recipeChoiceData.get(lineCounter)[3];
+                    if(reviewWords.contains(line = br.readLine())){
+                        //finish filling this in
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Unexpectedly ran out of lines to read. Sending you back to the menu...");
+                }
+        } catch (IOException e) {
+            System.out.println("Problem reading file. Sending you back to the menu...");
+            mainMenu();
+        }
+        
+        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
+            //copy from goodFile code fragment
+        } catch (IOException e) {
+            System.out.println("Problem reading file. Sending you back to the menu...");
+            mainMenu();
+        }
+    }
+
     public void seeReviews(ArrayList<String[]> recipeChoiceData) {
         String choice = "y";
         try(Scanner scanner = new Scanner(System.in)){

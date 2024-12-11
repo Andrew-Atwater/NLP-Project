@@ -88,29 +88,209 @@ public class Menu {
         }
     }
 
-    public void printRecipeFromDatabase() {
-
-        // COde to print all reviews information goes here, as well as weighted average review for Recipe
-        //ALso ask user about which recipe they want, tell them avergae thumbs count, and % up or down, etc.
-        
-        
-
+    public void printRecipeFromDatabase(){        
+        String txtFile = "test_recipe_metadata.txt";
+        String line;
+        String delimiter = "#";
+        String recipeChoice;
+        ArrayList<String[]> recipeChoiceData = new ArrayList<>();
+        try(Scanner scanner = new Scanner(System.in)){
+            System.out.println("Please enter the recipe you would like to see reviews for: ");
+            recipeChoice = scanner.nextLine();
+            int lineCounter = 0;
+            try(BufferedReader br = new BufferedReader(new FileReader(txtFile))){
+                while((line = br.readLine()) != null)
+                    try {
+                        lineCounter++;
+                        String[] recipeData = line.split(delimiter);
+                        if(recipeData[0].equals(recipeChoice)){
+                            recipeChoiceData.add(recipeData);
+                        }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("Out of bounds at line: " + lineCounter + ", error occurred."
+                                            +"Sending you back to the main menu...");
+                        mainMenu();
+                    }
+            } catch (IOException e) {
+                System.out.println("IOException occurred. Sending you back to the main menu...");
+                mainMenu();
+            }
+            System.out.println("Please select what you would like to see from the " + recipeChoice  
+                                +" recipe from the menu by choosing an integer associated with each option:" 
+                                +"\n1.) Scroll through reviews"
+                                +"\n2.) See the thumbs up/down count and average data"
+                                +"\n3.) See whether this is a good or bad recipe based on the reviews"
+                                +"\n4.) Return to main menu.");
+            int menuChoice = scanner.nextInt();
+            switch(menuChoice){
+                case 1:
+                    System.out.println("Collecting review content...");
+                    seeReviews(recipeChoiceData);
+                    break;
+                case 2:
+                    System.out.println("Counting thumbs...");
+                    seeThumbsData(recipeChoiceData);
+                    break;
+                case 3:
+                    System.out.println("Determining recipe tastiness...");
+                    getRecipeTastiness(recipeChoiceData);
+                    break;
+                case 4:
+                    System.out.println("Sending you back to the menu...");
+                    mainMenu();
+                    break;
+                default:
+                    System.out.println("Invalid choice! Sending you back to the menu...");
+                    mainMenu();
+                    break;
+            }
+        }
     }
 
     public void getRecipeTastiness(ArrayList<String[]> recipeChoiceData){
+        String goodFile = "goodWords.txt";
+        String badFile = "badWords.txt";
+        String line;
+        int lineCounter;
+        int goodWordCount = 0;
+        int badWordCount = 0;
+        int numReviews = recipeChoiceData.size();
+        try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
+            lineCounter = 0;
+            while((line = br.readLine()) != null)
+                try {
+                    lineCounter++;
+                    for(String[] review : recipeChoiceData){
+                        String reviewWords = review[3];
+                        if(reviewWords.contains(line)){
+                        goodWordCount += 1;
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
+                }
+        } catch (IOException e) {
+            System.out.println("Problem reading file. Sending you back to the menu...");
+            mainMenu();
+        }
         
+        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
+            lineCounter = 0;
+            while((line = br.readLine()) != null)
+                try {
+                    lineCounter++;
+                    for(String[] review : recipeChoiceData){
+                        String reviewWords = review[3];
+                        if(reviewWords.contains(line)){
+                        badWordCount += 1;
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
+                }
+        } catch (IOException e) {
+            System.out.println("Problem reading file. Sending you back to the menu...");
+            mainMenu();
+        }
+        int numNeutralReviews = numReviews - (goodWordCount + badWordCount);
+        if((goodWordCount - badWordCount) >= 2){
+            System.out.println("This recipe is tasty - there are " + goodWordCount + " reviews that are positive, " 
+                                + badWordCount + " reviews that are negative, and "
+                                + numNeutralReviews + " that are neutral, or could not be detected as negative or positive.");
+            System.out.println("Sending you back to the menu...");
+            mainMenu();
+        }
     }
 
     public void seeReviews(ArrayList<String[]> recipeChoiceData) {
-        
+        String choice = "y";
+        try(Scanner scanner = new Scanner(System.in)){
+            System.out.println("Review text will now be presented for the recipe you have selected." 
+                                +"Input 'y' to see the next review for the recipe, or any other letter to return to the menu.");
+            while(choice.equals("y"))
+                try {
+                    for(String[] recipe : recipeChoiceData){
+                        //implement NLP: see whether the current review is good or bad
+                        System.out.println(recipe[3] + "\nPlease enter 'y' to see another review, "
+                                            +"or any other key to exit to the menu.");
+                        choice = scanner.nextLine();
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    System.out.println("Ran out of review text. Returning to main menu.");
+                    mainMenu();
+                }
+            mainMenu();
+        }
     }
     public void seeThumbsData(ArrayList<String[]> recipeChoiceData){
-        
+        System.out.println("Presenting total thumbs up/down count for all reviews for the selected recipe, " 
+                            +"as well as weighted average rating based on thumbs up count...");
+        int thumbUpCount = 0;
+        int thumbDownCount = 0;
+        for(String[] review : recipeChoiceData){
+            thumbUpCount += Integer.parseInt(review[1]);
+            thumbDownCount += Integer.parseInt(review[2]);
+        }
+        System.out.println("Total thumbs up count for all reviews for the " + recipeChoiceData.get(0)[0] + " recipe:"
+                            +"\n" + thumbUpCount
+                            +"\nTotal thumbs down: "
+                            +"\n" + thumbDownCount);
+        int totalThumbs = thumbUpCount + thumbDownCount;
+        //if the total thumb count on a review is less than 2, discount it
+        thumbUpCount = 0;
+        thumbDownCount = 0;
+        int up = 0;
+        int down = 0;
+        for(String[] review : recipeChoiceData){
+            up = Integer.parseInt(review[1]);
+            down = Integer.parseInt(review[2]);
+            if(up + down >= 2){
+                thumbUpCount += up;
+                thumbDownCount += down;
+            }
+        }
+        double positiveRatedPct = (thumbUpCount / totalThumbs) * 100;
+        double negativeRatedPct = (thumbDownCount / totalThumbs) * 100;
+        double neutralRatedPct = ((thumbUpCount + thumbDownCount) / totalThumbs) * 100;
+        System.out.println("The percentage of positively rated reviews is: " + positiveRatedPct
+                            +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
+                            +"\nThe percentage of neutrally rated reviews"
+                            +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
     }
 
 
     public void mainMenu(){
+        try(Scanner scanner = new Scanner(System.in)){
+            System.out.println("Hello! Welcome to the recipe app!");
         
+            System.out.println("Please select one of the following options:"
+                            +"\n1.) Add a recipe review to the database."
+                            +"\n2.) Get details of a recipe from the database."
+                            +"\n3.) Find other reviews for the recipe."
+                            +"\n4.) Exit the app");
+            
+            int menuChoice = scanner.nextInt();
+
+            switch(menuChoice){
+                case 1:
+                    System.out.println("Getting recipe add function...");
+                    addRecipeToDatabase();
+                    break;
+                case 2:
+                    System.out.println("Getting print recipe data function...");
+                    printRecipeFromDatabase();
+                    break;
+                case 3:
+                    System.out.println("Thank you for using the recipe app!");
+                    shutDown();
+                    break;
+                default:
+                    System.out.println("Invalid choice! Please try again. Resetting menu...");
+                    mainMenu();
+                    break;
+            }
+
+        }
     }
     public static void main(String[] args) {
 

@@ -155,18 +155,21 @@ public class Menu {
         String badFile = "badWords.txt";
         String line;
         int lineCounter;
-        int goodWordCount;
-        int badWordCount;
+        int goodWordCount = 0;
+        int badWordCount = 0;
+        String[] review;
         try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
             lineCounter = 0;
             while((line = br.readLine()) != null)
                 try {
-                    String reviewWords = recipeChoiceData.get(lineCounter)[3];
-                    if(reviewWords.contains(line = br.readLine())){
-                        //finish filling this in
+                    for(review : ){
+                        String reviewWords = recipeChoiceData.get(lineCounter)[3];
+                        if(reviewWords.contains(line)){
+                        goodWordCount += 1;
+                        }
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Unexpectedly ran out of lines to read. Sending you back to the menu...");
+                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
                 }
         } catch (IOException e) {
             System.out.println("Problem reading file. Sending you back to the menu...");
@@ -260,8 +263,6 @@ public class Menu {
                     printRecipeFromDatabase();
                     break;
                 case 3:
-                    //do we need this case? print recipe allows this function from within
-                case 4:
                     System.out.println("Thank you for using the recipe app!");
                     shutDown();
                     break;

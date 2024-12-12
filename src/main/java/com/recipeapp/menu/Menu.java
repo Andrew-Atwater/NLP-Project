@@ -4,10 +4,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+
 import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
-import org.bson.BsonValue;
-import com.mongodb.client.result.InsertOneResult;
 
 // import com.movieapp.database.Database;
 // import com.movieapp.movie.Movie;
@@ -49,7 +48,10 @@ public class Menu {
             while ((line = br.readLine()) != null) {
                 try {
                     lineCounter++;
-                    String[] recipeData = line.split(delimiter);
+                    String[] recipeData = line.split(delimiter); 
+                    /* splits each review into four parts of an array: recipe name, thumbs up count, thumbs down count,
+                     * and review description.
+                     */
                     String recipeNames = recipeData[0];
                     Integer thumbsUp = Integer.parseInt(recipeData[1]);
                     Integer thumbsDown = Integer.parseInt(recipeData[2]);
@@ -106,6 +108,9 @@ public class Menu {
         String delimiter = "#";
         String recipeChoice;
         ArrayList<String[]> recipeChoiceData = new ArrayList<>();
+        /* creates an arrayList of string arrays so that each individual array can be called/incremented through at will to
+         * get data.
+         */
         try(Scanner scanner = new Scanner(System.in)){
             System.out.println("Please enter the recipe you would like to see reviews for: ");
             recipeChoice = scanner.nextLine();
@@ -117,6 +122,7 @@ public class Menu {
                         String[] recipeData = line.split(delimiter);
                         if(recipeData[0].equals(recipeChoice)){
                             recipeChoiceData.add(recipeData);
+                            //adds the string array of review content to the arraylist
                         }
                     } catch (ArrayIndexOutOfBoundsException e) {
                         System.out.println("Out of bounds at line: " + lineCounter + ", error occurred."
@@ -166,16 +172,15 @@ public class Menu {
         int lineCounter;
         int goodWordCount = 0;
         int badWordCount = 0;
-        int numReviews = recipeChoiceData.size();
         try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
             lineCounter = 0;
-            while((line = br.readLine()) != null)
+            while((line = br.readLine()) != null) //sets the line being read to the next line
                 try {
-                    lineCounter++;
-                    for(String[] review : recipeChoiceData){
-                        String reviewWords = review[3];
-                        if(reviewWords.contains(line)){
-                        goodWordCount += 1;
+                    lineCounter++; //shows up if there is an error, tells user which line of the document the error occurred on
+                    for(String[] review : recipeChoiceData){ //for every review on the selected recipe
+                        String reviewWords = review[3]; // set reviewWords to the review text
+                        if(reviewWords.contains(line)){ // if reviewWords has the current good word being read
+                            goodWordCount += 1; // it will increment the amount of positive words in the review
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
@@ -186,7 +191,7 @@ public class Menu {
             mainMenu();
         }
         
-        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
+        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){ // same as above code block, but with the negative words
             lineCounter = 0;
             while((line = br.readLine()) != null)
                 try {
@@ -204,11 +209,28 @@ public class Menu {
             System.out.println("Problem reading file. Sending you back to the menu...");
             mainMenu();
         }
-        int numNeutralReviews = numReviews - (goodWordCount + badWordCount);
+        /*if there are significantly more good words than bad, the recipe is tasty.
+         * the number values in the if statements can be tweaked to reflect the actuality of good/neutral/bad
+         */
         if((goodWordCount - badWordCount) >= 2){
-            System.out.println("This recipe is tasty - there are " + goodWordCount + " reviews that are positive, " 
-                                + badWordCount + " reviews that are negative, and "
-                                + numNeutralReviews + " that are neutral, or could not be detected as negative or positive.");
+            System.out.println("This recipe is tasty.");
+            System.out.println("Sending you back to the menu...");
+            mainMenu();
+        }
+        /*if there isn't enough difference between the amount of good and bad words, the recipe is neutral.
+         * the recipe will also be neutral if there are no hits for the words in the lists.
+         */
+        if((goodWordCount - badWordCount) <= 1 && (goodWordCount - badWordCount) >= -1){
+            System.out.println("This recipe is neutral - there isn't enough "
+                                +"difference between the amount of positive and negative reviews.");
+            System.out.println("Sending you back to the menu...");
+            mainMenu();
+        }
+        /*if there are significantly more bad words than good, the recipe is not tasty
+         * again, the values in all these if statements can be tweaked, just as long as every possible integer is covered,
+         so certain values don't throw errors. */
+        if((goodWordCount - badWordCount) <= -2){
+            System.out.println("This recipe is not tasty.");
             System.out.println("Sending you back to the menu...");
             mainMenu();
         }
@@ -216,15 +238,72 @@ public class Menu {
 
     public void seeReviews(ArrayList<String[]> recipeChoiceData) {
         String choice = "y";
+        String goodFile = "goodWords.txt";
+        String badFile = "badWords.txt";
+        String line;
+        int lineCounter;
+        int goodWordCount = 0;
+        int badWordCount = 0;
         try(Scanner scanner = new Scanner(System.in)){
             System.out.println("Review text will now be presented for the recipe you have selected." 
                                 +"Input 'y' to see the next review for the recipe, or any other letter to return to the menu.");
-            while(choice.equals("y"))
+            while(choice.equals("y")) //if anything other than 'y' is input, the while loop breaks
                 try {
+                    //this block of code is very similar to the one above, but it loops through and does it one at a time
                     for(String[] recipe : recipeChoiceData){
-                        //implement NLP: see whether the current review is good or bad
-                        System.out.println(recipe[3] + "\nPlease enter 'y' to see another review, "
-                                            +"or any other key to exit to the menu.");
+                        try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
+                            lineCounter = 0;
+                            while((line = br.readLine()) != null)
+                                try {
+                                    lineCounter++;
+                                    for(String[] review : recipeChoiceData){
+                                        String reviewWords = review[3];
+                                        if(reviewWords.contains(line)){
+                                        goodWordCount += 1;
+                                        }
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException e) {
+                                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
+                                }
+                        } catch (IOException e) {
+                            System.out.println("Problem reading file. Sending you back to the menu...");
+                            mainMenu();
+                        }
+                        
+                        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
+                            lineCounter = 0;
+                            while((line = br.readLine()) != null)
+                                try {
+                                    lineCounter++;
+                                    for(String[] review : recipeChoiceData){
+                                        String reviewWords = review[3];
+                                        if(reviewWords.contains(line)){
+                                        badWordCount += 1;
+                                        }
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException e) {
+                                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
+                                }
+                        } catch (IOException e) {
+                            System.out.println("Problem reading file. Sending you back to the menu...");
+                            mainMenu();
+                        }
+                        
+                        System.out.println(recipe[3]);
+                        
+                        if((goodWordCount - badWordCount) >= 2){
+                            System.out.println("This review says that the recipe is tasty.");
+                        }
+
+                        if((goodWordCount - badWordCount) <= 1 && (goodWordCount - badWordCount) >= -1){
+                            System.out.println("This review is neutral about the tastiness of the recipe.");
+                        }
+
+                        if((goodWordCount - badWordCount) <= -2){
+                            System.out.println("This review says that the recipe is not tasty.");
+                        }
+
+                        System.out.println("\nPlease enter 'y' to see another review, or any other key to exit to the menu.");
                         choice = scanner.nextLine();
                     }
                 } catch (IndexOutOfBoundsException e) {

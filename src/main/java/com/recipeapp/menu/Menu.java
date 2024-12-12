@@ -261,6 +261,7 @@ public class Menu {
                             +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
                             +"\nThe percentage of neutrally rated reviews"
                             +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
+    }
 
 
     // Method to find reviews for a  specific recipe

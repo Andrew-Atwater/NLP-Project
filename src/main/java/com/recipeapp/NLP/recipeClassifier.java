@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.bson.BsonValue;
-import com.recipeapp.recipe.Recipe;
+import com.recipeapp.recipe.recipeReview;
 
 
 public class recipeClassifier {
@@ -39,9 +39,9 @@ public class recipeClassifier {
      * 
      * @return void
      */
-    public void addSample(BsonValue id, Recipe review) {
-        String[] words = processor.processText(review.getReviewText()));
-        if (review.getSentiment().equals("positive")) {
+    public void addSample(BsonValue id, recipeReview review) {
+        String[] words = processor.processText(review.getReviewText());
+        if (review.getSentiment().equals("tasty")) {
             updateWordCount(positiveWordCount, words);
             numPositiveReviews++;
         } else {

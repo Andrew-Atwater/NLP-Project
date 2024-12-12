@@ -1,4 +1,4 @@
-package com.recipeapp.NLP;
+package com.recipeapp.nlp;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,7 +7,7 @@ import org.bson.BsonValue;
 import com.recipeapp.recipe.Recipe;
 
 
-public class recipeClassifier {
+public class RecipeClassifier {
 
     private Processor processor;
     private HashSet<String> vocabulary = new HashSet<>();
@@ -27,7 +27,7 @@ public class recipeClassifier {
     private HashMap<String, Double> positiveProbabilities = new HashMap<>();
     private HashMap<String, Double> negativeProbabilities = new HashMap<>();
 
-    public recipeClassifier(Processor processor) {
+    public RecipeClassifier(Processor processor) {
         this.processor = processor;
     }
 

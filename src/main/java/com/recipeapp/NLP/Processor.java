@@ -1,4 +1,4 @@
-package com.recipeapp.NLP;
+package com.recipeapp.nlp;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

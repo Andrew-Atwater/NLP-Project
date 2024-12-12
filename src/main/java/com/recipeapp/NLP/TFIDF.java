@@ -1,4 +1,4 @@
-package com.recipeapp.NLP;
+package com.recipeapp.nlp;
 
 import java.util.ArrayList;
 import java.util.HashMap;

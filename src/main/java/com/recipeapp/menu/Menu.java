@@ -8,47 +8,45 @@ import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
 import org.bson.BsonValue;
 import com.mongodb.client.result.InsertOneResult;
-
-// import com.movieapp.database.Database;
-// import com.movieapp.movie.Movie;
-// import com.movieapp.movie.MovieReview;
-// import com.movieapp.nlp.TFIDF;
-// import com.movieapp.nlp.MovieClassifier;
-// import com.movieapp.nlp.MovieRecommender;
-// import com.movieapp.nlp.Processor;
+import com.recipeapp.recipe.RecipeReview;
+import com.recipeapp.nlp.TFIDF;
+import com.recipeapp.nlp.RecipeClassifier;
+import com.recipeapp.nlp.RecipeRecommender;
+import com.recipeapp.nlp.Processor;
 
 
 public class Menu {
 
+    private Processor processor = new Processor("src/main/resources/listOfStopWords.txt");
+    private TFIDF tfidf = new TFIDF(processor);
+    private RecipeClassifier classifier = new RecipeClassifier(processor);
+
     /*
      * This method is called before showing the menu options to the user. It creates the necessary collections in the database.
-     * It also parses the necessary CSV files and populatest the collection.
-     * 
-     * You would also want to add other features such 
+     * It also parses the necessary CSV files and populates the collection.
      */
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-
-        Database recipeDatabase = new Database("recipe_app_database", "review_data");
-        Database reviewDatabase = new Database("recipe_app_database", "recipe_data");
-
+        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.createCollection();
+        Database reviewDatabase = new Database("recipe_app_database", "recipe_reviews");
         reviewDatabase.createCollection();
 
-        // Parse test_recipe_metadata.txt
-        String txtFile = "src/main/resources/test_recipe_metadata.txt";
+        // Parse test data
+        String txtFile = "src/main/resources/recipe_data_test.txt";
         String line;
         String delimiter = "#";
+        int lineCounter = 0;  //for error testing
 
-        int lineCounter = 0;
+
         try (BufferedReader br = new BufferedReader(new FileReader(txtFile))) {
             // Skip the first header line
             br.readLine();
-            lineCounter++;
+            lineCounter++;   //for error testing
             while ((line = br.readLine()) != null) {
-                try {
-                    lineCounter++;
+                try {  //for error testing
+                    lineCounter++;  //for error testing
                     String[] recipeData = line.split(delimiter);
                     String recipeNames = recipeData[0];
                     Integer thumbsUp = Integer.parseInt(recipeData[1]);
@@ -56,17 +54,41 @@ public class Menu {
                     String reviewContent = recipeData[3];
                     // System.out.println(line);
                     Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
-                    recipeDatabase.addToDatabase(recipeObject.getDocument());
-                } catch (ArrayIndexOutOfBoundsException e ){
-                    System.out.println("Encountered issue on line "+ lineCounter 
-                                        +". Sending you back to the main menu...");
+                    InsertOneResult result = recipeDatabase.addToDatabase(recipeObject.getDocument());
+                    BsonValue id = result.getInsertedId();
+                    tfidf.addSample(id, recipeObject.getOverview());
+                } catch (ArrayIndexOutOfBoundsException e ){   //shows where txt file doesn't fit format
+                    System.out.println("Encountered issue on line "+ lineCounter +". Sending you back to the main menu..."); //error catch statement
                     mainMenu();
                 }
             }
+            tfidf.calculateIDF();
         } catch (IOException e) {
             System.out.println("IOException occurred. Sending you back to the main menu...");
             mainMenu();
         } 
+
+        // Parse the recipe_review_train.csv
+        String reviewTXTFile = "src/main/resources/recipe_review_train.csv";
+        String reviewLine;
+        try (BufferedReader br = new BufferedReader(new FileReader(reviewTXTFile))) {
+            // Skip the first header line
+            br.readLine();
+
+            while ((reviewLine = br.readLine()) != null) {
+                String[] reviewData = reviewLine.split(delimiter);
+                String review = reviewData[0];
+                String sentiment = reviewData[1];
+
+                MovieReview reviewObject = new MovieReview(review, sentiment);
+                InsertOneResult result = reviewDatabase.addToDatabase(reviewObject.getDocument());
+
+                classifier.addSample(result.getInsertedId(), reviewObject);
+            }
+            classifier.train();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*

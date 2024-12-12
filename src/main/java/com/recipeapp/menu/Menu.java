@@ -99,11 +99,13 @@ public class Menu {
 
             recipeDatabase.addToDatabase(userRecipe.getDocument());
 
+            mainMenu();
         }
+        
     }
 
     public void printRecipeFromDatabase(){        
-        String txtFile = "test_recipe_metadata.txt";
+        String txtFile = "src/main/resources/test_recipe_metadata.txt";
         String line;
         String delimiter = "#";
         String recipeChoice;
@@ -166,8 +168,8 @@ public class Menu {
     }
 
     public void getRecipeTastiness(ArrayList<String[]> recipeChoiceData){
-        String goodFile = "goodWords.txt";
-        String badFile = "badWords.txt";
+        String goodFile = "src/main/resources/goodWords.txt";
+        String badFile = "src/main/resources/badWords.txt";
         String line;
         int lineCounter;
         int goodWordCount = 0;
@@ -238,8 +240,8 @@ public class Menu {
 
     public void seeReviews(ArrayList<String[]> recipeChoiceData) {
         String choice = "y";
-        String goodFile = "goodWords.txt";
-        String badFile = "badWords.txt";
+        String goodFile = "src/main/resources/goodWords.txt";
+        String badFile = "src/main/resources/badWords.txt";
         String line;
         int lineCounter;
         int goodWordCount = 0;
@@ -347,6 +349,7 @@ public class Menu {
                             +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
                             +"\nThe percentage of neutrally rated reviews"
                             +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
+        mainMenu();
     }
  
 

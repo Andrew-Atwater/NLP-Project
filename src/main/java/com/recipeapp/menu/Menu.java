@@ -1,17 +1,21 @@
 package com.recipeapp.menu;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.util.ArrayList;
-
-// import java.io.Serial;
-
 import java.util.Scanner;
-
 import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
+import org.bson.BsonValue;
+import com.mongodb.client.result.InsertOneResult;
+
+// import com.movieapp.database.Database;
+// import com.movieapp.movie.Movie;
+// import com.movieapp.movie.MovieReview;
+// import com.movieapp.nlp.TFIDF;
+// import com.movieapp.nlp.MovieClassifier;
+// import com.movieapp.nlp.MovieRecommender;
+// import com.movieapp.nlp.Processor;
 
 
 public class Menu {
@@ -25,8 +29,12 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_reviews", "review_data");
+
+        Database recipeDatabase = new Database("recipe_app_database", "review_data");
+        Database reviewDatabase = new Database("recipe_app_database", "recipe_data");
+
         recipeDatabase.createCollection();
+        reviewDatabase.createCollection();
 
         // Parse test_recipe_metadata.txt
         String txtFile = "src/main/resources/test_recipe_metadata.txt";
@@ -67,7 +75,6 @@ public class Menu {
     public void shutDown() {
 
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
-        recipeDatabase.deleteAllDocuments();
         recipeDatabase.deleteCollection();
         // System.out.println("Trying to delete...");
 
@@ -262,7 +269,7 @@ public class Menu {
                             +"\nThe percentage of neutrally rated reviews"
                             +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
     }
-
+ 
 
     // Method to find reviews for a  specific recipe
     public void findRecipeOtherReviews() {

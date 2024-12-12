@@ -29,8 +29,10 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
+
         Database recipeDatabase = new Database("recipe_app_database", "review_data");
         Database reviewDatabase = new Database("recipe_app_database", "recipe_data");
+
         recipeDatabase.createCollection();
         reviewDatabase.createCollection();
 
@@ -267,7 +269,7 @@ public class Menu {
                             +"\nThe percentage of neutrally rated reviews"
                             +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
     }
-
+ 
 
     // Method to find reviews for a  specific recipe
     public void findRecipeOtherReviews() {

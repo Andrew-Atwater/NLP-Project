@@ -25,7 +25,7 @@ public class Menu {
     public void startUp() {
 
         // Create a collection in the database to store Recipe objects
-        Database recipeDatabase = new Database("recipe_reviews", "review_data");
+        Database recipeDatabase = new Database("recipe_app_reviews", "review_data");
         recipeDatabase.createCollection();
 
         // Parse test_recipe_metadata.txt
@@ -261,7 +261,7 @@ public class Menu {
                             +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
                             +"\nThe percentage of neutrally rated reviews"
                             +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
-
+    }
 
     // Method to find reviews for a  specific recipe
     public void findRecipeOtherReviews() {

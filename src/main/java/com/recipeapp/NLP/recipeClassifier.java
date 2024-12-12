@@ -40,7 +40,7 @@ public class recipeClassifier {
      * @return void
      */
     public void addSample(BsonValue id, Recipe review) {
-        String[] words = processor.processText(review.getReviewText()));
+        String[] words = processor.processText(review.getReviewText());
         if (review.getSentiment().equals("positive")) {
             updateWordCount(positiveWordCount, words);
             numPositiveReviews++;

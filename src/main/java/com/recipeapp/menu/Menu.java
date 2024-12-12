@@ -63,8 +63,8 @@ public class Menu {
             System.out.println("IOException occurred. Sending you back to the main menu...");
             mainMenu();
         } 
-        // Parse the recipe_review_train.csv
-        String reviewTXTFile = "src/main/resources/recipe_review_train.csv";
+        // Parse the recipe_review_train.txt
+        String reviewTXTFile = "src/main/resources/recipe_review_train.txt";
         String reviewLine;
         try (BufferedReader br = new BufferedReader(new FileReader(reviewTXTFile))) {
             // Skip the first header line
@@ -155,7 +155,7 @@ public class Menu {
         System.out.println("Hello! Welcome to the movie app!");
         Scanner scanner = new Scanner(System.in);
             int choice = 0;
-            while (choice != 6) {
+            while (choice != 5) {
                 System.out.println("Please select one of the following options:"
                                 +"\n1.) Add a recipe review to the database."
                                 +"\n2.) Get details of a recipe from the database."

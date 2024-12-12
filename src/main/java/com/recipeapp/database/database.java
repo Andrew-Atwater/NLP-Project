@@ -57,7 +57,7 @@ public class Database {
             recipeDatabase.getCollection(this.collectionName).drop();
 
         }
-        System.out.println("Deleted...");
+        // System.out.println("Deleted...");
 
     }
 
@@ -71,7 +71,7 @@ public class Database {
             recipeCollection.deleteMany(new Document());
 
         }
-        System.out.println("Almost deleted...");
+        // System.out.println("Almost deleted...");
     }
 
 }

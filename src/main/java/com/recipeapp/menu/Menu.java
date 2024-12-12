@@ -9,6 +9,7 @@ import java.util.Scanner;
 import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
 
+
 public class Menu {
 
     /*
@@ -64,7 +65,7 @@ public class Menu {
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteAllDocuments();
         recipeDatabase.deleteCollection();
-        System.out.println("Trying to delete...");
+        // System.out.println("Trying to delete...");
 
     }
 
@@ -266,8 +267,7 @@ public class Menu {
             System.out.println("Please select one of the following options:"
                             +"\n1.) Add a recipe review to the database."
                             +"\n2.) Get details of a recipe from the database."
-                            +"\n3.) Find other reviews for the recipe."
-                            +"\n4.) Exit the app");
+                            +"\n3.) Exit the app");
             
             int menuChoice = scanner.nextInt();
 

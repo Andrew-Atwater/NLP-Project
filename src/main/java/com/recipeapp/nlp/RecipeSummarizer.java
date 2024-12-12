@@ -1,20 +1,16 @@
 package com.recipeapp.nlp;
-
+import com.recipeapp.recipe.Recipe;
 import java.util.ArrayList;
 
 public class RecipeSummarizer {
-    
     private TFIDF tfidf;
     private Processor processor;
-
-    public MovieSummarizer(Processor processor, TFIDF tfidf) {
+    public RecipeSummarizer(Processor processor, TFIDF tfidf) {
         this.processor = processor;
         this.tfidf = tfidf;
     }
-
-
-    public String summarizeMovie(Movie movie, int numSentences) {
-        String[] sentences = processor.splitTextIntoSentences(movie.getOverview());
+    public String summarizeRecipe(Recipe recipe, int numSentences) {
+        String[] sentences = processor.splitTextIntoSentences(recipe.getReviewText());
         ArrayList<String> summary = new ArrayList<>();
         for (String sentence : sentences) {
             String[] words = processor.processText(sentence);
@@ -30,9 +26,7 @@ public class RecipeSummarizer {
             }
         }
         return String.join(" ", summary);
-
     }
-
     public String summarizeText(String text) {
         String[] words = processor.processText(text);
         StringBuilder summary = new StringBuilder();
@@ -44,6 +38,4 @@ public class RecipeSummarizer {
         }
         return summary.toString();
     }
-
-    
 }

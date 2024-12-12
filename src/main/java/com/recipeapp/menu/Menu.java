@@ -112,7 +112,7 @@ public class Menu {
             Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
 
             InsertOneResult result = recipeDatabase.addToDatabase(userRecipe.getDocument());
-            tfidf.addSample(result.getInsertedId(), userRecipe);
+            tfidf.addSample(result.getInsertedId(), userRecipe.getReviewText());
             System.out.println("Recipe " + newRecipeName + " successfully added to the database!");
 
     }

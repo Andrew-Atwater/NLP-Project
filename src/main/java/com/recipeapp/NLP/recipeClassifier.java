@@ -2,35 +2,28 @@ package com.recipeapp.nlp;
 
 import java.util.HashMap;
 import java.util.HashSet;
-
 import org.bson.BsonValue;
 import com.recipeapp.recipe.Recipe;
+import com.recipeapp.recipe.RecipeReview;
 
 
 public class RecipeClassifier {
-
     private Processor processor;
     private HashSet<String> vocabulary = new HashSet<>();
-    
     // You want to create as many word count hashmaps, probability hash maps, and attributes to store the count
     //  as the number of classes in your dataset. For example, if your dataset has three types of reviews, positive, 
     // negative, and neutral, you would create three hashmaps for word count, for probabilities, and three attributes 
     // to store the count of each type of review.
-
     private int numPositiveReviews = 0;
     private int numNegativeReviews = 0;
     private int totalReviews = 0;
-
     private HashMap<String, Integer> positiveWordCount = new HashMap<>();
     private HashMap<String, Integer> negativeWordCount = new HashMap<>();
-
     private HashMap<String, Double> positiveProbabilities = new HashMap<>();
     private HashMap<String, Double> negativeProbabilities = new HashMap<>();
-
     public RecipeClassifier(Processor processor) {
         this.processor = processor;
     }
-
     /*
      * This method adds a review from the training set and updates the word count
      * 
@@ -39,8 +32,8 @@ public class RecipeClassifier {
      * 
      * @return void
      */
-    public void addSample(BsonValue id, Recipe review) {
-        String[] words = processor.processText(review.getReviewText());
+    public void addSample(BsonValue id, RecipeReview review) {
+        String[] words = processor.processText(review.getReview());
         if (review.getSentiment().equals("positive")) {
             updateWordCount(positiveWordCount, words);
             numPositiveReviews++;
@@ -50,7 +43,6 @@ public class RecipeClassifier {
         }
         totalReviews++;
     }
-
     /*
      * This method updates the word count hashmaps which is called by the addSample method
      * 
@@ -69,7 +61,6 @@ public class RecipeClassifier {
             vocabulary.add(word);
         }
     }
-
     /*
      * In this method we calculate the prior probabilities of each class and the
      * 
@@ -87,7 +78,6 @@ public class RecipeClassifier {
             negativeProbabilities.put(word, negativeProbability);
         }
     }
-
     /*
      * This method calculates the probability of a seeing word in given a class
      * 
@@ -104,7 +94,6 @@ public class RecipeClassifier {
             return 1.0 / (totalWords + vocabulary.size());
         }
     }
-
     /*
      * This method classifies a review as positive or negative. It calculates the
      * score for each class and returns the class with the highest score
@@ -113,23 +102,18 @@ public class RecipeClassifier {
      * 
      * @return String: The classification of the review
      */
-
     public String classify(String review) {
         String[] words = processor.processText(review);
         double positiveScore = Math.log((double) numPositiveReviews / totalReviews);
         double negativeScore = Math.log((double) numNegativeReviews / totalReviews);
-
         for (String word : words) {
             positiveScore += Math.log(positiveProbabilities.getOrDefault(word, 1.0 / (positiveWordCount.size() + vocabulary.size())));
             negativeScore += Math.log(negativeProbabilities.getOrDefault(word, 1.0 / (negativeWordCount.size() + vocabulary.size())));
         }
-
         if (positiveScore > negativeScore) {
             return "positive";
         } else {
             return "negative";
         }
     }
-
-
 }

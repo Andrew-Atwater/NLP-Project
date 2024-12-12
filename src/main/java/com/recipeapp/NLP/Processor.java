@@ -7,7 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Processor {
-private Set<String> stopWords;
+
+    private Set<String> stopWords;
 
     public Processor(String stopWordsFilePath) {
         stopWords = new HashSet<>();

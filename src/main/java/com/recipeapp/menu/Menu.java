@@ -29,8 +29,8 @@ public class Menu {
 
         // Create a collection in the database to store Recipe objects
 
-        Database recipeDatabase = new Database("recipe_app_database", "review_data");
-        Database reviewDatabase = new Database("recipe_app_database", "recipe_data");
+        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
+        Database reviewDatabase = new Database("recipe_app_database", "review_data");
 
         recipeDatabase.createCollection();
         reviewDatabase.createCollection();
@@ -62,12 +62,12 @@ public class Menu {
                 } catch (ArrayIndexOutOfBoundsException e ){
                     System.out.println("Encountered issue on line "+ lineCounter 
                                         +". Sending you back to the main menu...");
-                    mainMenu();
+                    goToMenu();
                 }
             }
         } catch (IOException e) {
             System.out.println("IOException occurred. Sending you back to the main menu...");
-            mainMenu();
+            goToMenu();
         } 
     }
 
@@ -78,12 +78,14 @@ public class Menu {
 
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteCollection();
+        Database reviewDatabase = new Database("recipe_app_database", "review_data");
+        reviewDatabase.deleteCollection();
         // System.out.println("Trying to delete...");
 
     }
 
     public void addRecipeToDatabase() {
-
+        
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Please enter the name of the recipe");
             String newRecipeName = scanner.nextLine();
@@ -99,7 +101,7 @@ public class Menu {
 
             recipeDatabase.addToDatabase(userRecipe.getDocument());
 
-            mainMenu();
+            goToMenu();
         }
         
     }
@@ -129,12 +131,15 @@ public class Menu {
                     } catch (ArrayIndexOutOfBoundsException e) {
                         System.out.println("Out of bounds at line: " + lineCounter + ", error occurred."
                                             +"Sending you back to the main menu...");
-                        mainMenu();
+                        goToMenu();
+                        
                     }
             } catch (IOException e) {
                 System.out.println("IOException occurred. Sending you back to the main menu...");
-                mainMenu();
+                goToMenu();
             }
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
             System.out.println("Please select what you would like to see from the " + recipeChoice  
                                 +" recipe from the menu by choosing an integer associated with each option:" 
                                 +"\n1.) Scroll through reviews"
@@ -144,24 +149,30 @@ public class Menu {
             int menuChoice = scanner.nextInt();
             switch(menuChoice){
                 case 1:
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
                     System.out.println("Collecting review content...");
                     seeReviews(recipeChoiceData);
                     break;
                 case 2:
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
                     System.out.println("Counting thumbs...");
                     seeThumbsData(recipeChoiceData);
                     break;
                 case 3:
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
                     System.out.println("Determining recipe tastiness...");
                     getRecipeTastiness(recipeChoiceData);
                     break;
                 case 4:
                     System.out.println("Sending you back to the menu...");
-                    mainMenu();
+                    goToMenu();
                     break;
                 default:
                     System.out.println("Invalid choice! Sending you back to the menu...");
-                    mainMenu();
+                    goToMenu();
                     break;
             }
         }
@@ -187,10 +198,11 @@ public class Menu {
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
+                    goToMenu();
                 }
         } catch (IOException e) {
             System.out.println("Problem reading file. Sending you back to the menu...");
-            mainMenu();
+            goToMenu();
         }
         
         try(BufferedReader br = new BufferedReader(new FileReader(badFile))){ // same as above code block, but with the negative words
@@ -209,15 +221,14 @@ public class Menu {
                 }
         } catch (IOException e) {
             System.out.println("Problem reading file. Sending you back to the menu...");
-            mainMenu();
+            goToMenu();
         }
         /*if there are significantly more good words than bad, the recipe is tasty.
          * the number values in the if statements can be tweaked to reflect the actuality of good/neutral/bad
          */
         if((goodWordCount - badWordCount) >= 2){
             System.out.println("This recipe is tasty.");
-            System.out.println("Sending you back to the menu...");
-            mainMenu();
+            goToMenu();
         }
         /*if there isn't enough difference between the amount of good and bad words, the recipe is neutral.
          * the recipe will also be neutral if there are no hits for the words in the lists.
@@ -225,17 +236,32 @@ public class Menu {
         if((goodWordCount - badWordCount) <= 1 && (goodWordCount - badWordCount) >= -1){
             System.out.println("This recipe is neutral - there isn't enough "
                                 +"difference between the amount of positive and negative reviews.");
-            System.out.println("Sending you back to the menu...");
-            mainMenu();
+            goToMenu();
         }
         /*if there are significantly more bad words than good, the recipe is not tasty
          * again, the values in all these if statements can be tweaked, just as long as every possible integer is covered,
          so certain values don't throw errors. */
         if((goodWordCount - badWordCount) <= -2){
             System.out.println("This recipe is not tasty.");
-            System.out.println("Sending you back to the menu...");
-            mainMenu();
+            goToMenu();
         }
+    }
+
+    public void goToMenu(){
+        String choice = "o";
+        String breaker = "t";
+        System.out.println("");
+        try(Scanner scanner = new Scanner(System.in)){
+            while (breaker.equals("t")) 
+                System.out.println("Type the letter \"x\" to return to the menu.");
+                choice = scanner.nextLine();
+                if (choice.equals("x")){ //if anything other than 'y' is input, the while loop breaks
+                    breaker = "f";
+                } 
+        }        
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+        mainMenu();
     }
 
     public void seeReviews(ArrayList<String[]> recipeChoiceData) {
@@ -269,7 +295,7 @@ public class Menu {
                                 }
                         } catch (IOException e) {
                             System.out.println("Problem reading file. Sending you back to the menu...");
-                            mainMenu();
+                            goToMenu();
                         }
                         
                         try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
@@ -288,7 +314,7 @@ public class Menu {
                                 }
                         } catch (IOException e) {
                             System.out.println("Problem reading file. Sending you back to the menu...");
-                            mainMenu();
+                            goToMenu();
                         }
                         
                         System.out.println(recipe[3]);
@@ -310,7 +336,7 @@ public class Menu {
                     }
                 } catch (IndexOutOfBoundsException e) {
                     System.out.println("Ran out of review text. Returning to main menu.");
-                    mainMenu();
+                    goToMenu();
                 }
             mainMenu();
         }
@@ -349,7 +375,7 @@ public class Menu {
                             +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
                             +"\nThe percentage of neutrally rated reviews"
                             +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
-        mainMenu();
+        goToMenu();
     }
  
 
@@ -418,10 +444,14 @@ public class Menu {
 
             switch(menuChoice){
                 case 1:
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
                     System.out.println("Getting recipe add function...");
                     addRecipeToDatabase();
                     break;
                 case 2:
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
                     System.out.println("Getting print recipe data function...");
                     printRecipeFromDatabase();
                     break;
@@ -431,7 +461,7 @@ public class Menu {
                     break;
                 default:
                     System.out.println("Invalid choice! Please try again. Resetting menu...");
-                    mainMenu();
+                    goToMenu();
                     break;
             }
 
@@ -444,6 +474,8 @@ public class Menu {
         //Call the startUp method
         Menu menu = new Menu();
         menu.startUp();
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
         menu.mainMenu();
         // Ideally you want to make this menu an endless loop until the user enters to exit the app. (done)
         // When they select the option, you call the shutDown method. (done)

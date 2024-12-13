@@ -5,88 +5,106 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import com.recipeapp.database.Database;
-import com.recipeapp.recipe.Recipe;
 
-// import com.movieapp.database.Database;
-// import com.movieapp.movie.Movie;
-// import com.movieapp.movie.MovieReview;
-// import com.movieapp.nlp.TFIDF;
-// import com.movieapp.nlp.MovieClassifier;
-// import com.movieapp.nlp.MovieRecommender;
-// import com.movieapp.nlp.Processor;
+import org.bson.BsonValue;
+
+import com.mongodb.client.result.InsertOneResult;
+import com.recipeapp.database.Database;
+import com.recipeapp.nlp.Processor;
+import com.recipeapp.nlp.RecipeClassifier;
+import com.recipeapp.nlp.RecipeRecommender;
+import com.recipeapp.nlp.TFIDF;
+import com.recipeapp.recipe.Recipe;
+import com.recipeapp.recipe.RecipeReview;
 
 
 public class Menu {
 
+    private Processor processor = new Processor("src/main/resources/listOfStopWords.txt");
+    private TFIDF tfidf = new TFIDF(processor);
+    private RecipeClassifier classifier = new RecipeClassifier(processor);
+
     /*
      * This method is called before showing the menu options to the user. It creates the necessary collections in the database.
-     * It also parses the necessary CSV files and populatest the collection.
-     * 
-     * You would also want to add other features such 
+     * It also parses the necessary CSV files and populates the collection.
      */
     public void startUp() {
-
         // Create a collection in the database to store Recipe objects
 
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
-        Database reviewDatabase = new Database("recipe_app_database", "review_data");
-
         recipeDatabase.createCollection();
+        Database reviewDatabase = new Database("recipe_app_database", "recipe_reviews");
         reviewDatabase.createCollection();
-
-        // Parse test_recipe_metadata.txt
-        String txtFile = "src/main/resources/test_recipe_metadata.txt";
+        // Parse test data
+        String txtFile = "src/main/resources/recipe_data_test.txt";
         String line;
         String delimiter = "#";
-
-        int lineCounter = 0;
+        int lineCounter = 0;  //for error testing
         try (BufferedReader br = new BufferedReader(new FileReader(txtFile))) {
             // Skip the first header line
             br.readLine();
-            lineCounter++;
+            lineCounter++;   //for error testing
             while ((line = br.readLine()) != null) {
-                try {
-                    lineCounter++;
-                    String[] recipeData = line.split(delimiter); 
-                    /* splits each review into four parts of an array: recipe name, thumbs up count, thumbs down count,
-                     * and review description.
-                     */
+                try {  //for error testing
+                    lineCounter++;  //for error testing
+                    String[] recipeData = line.split(delimiter);
                     String recipeNames = recipeData[0];
                     Integer thumbsUp = Integer.parseInt(recipeData[1]);
                     Integer thumbsDown = Integer.parseInt(recipeData[2]);
                     String reviewContent = recipeData[3];
                     // System.out.println(line);
                     Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
-                    recipeDatabase.addToDatabase(recipeObject.getDocument());
-                } catch (ArrayIndexOutOfBoundsException e ){
-                    System.out.println("Encountered issue on line "+ lineCounter 
-                                        +". Sending you back to the main menu...");
-                    goToMenu();
+
+                    InsertOneResult result = recipeDatabase.addToDatabase(recipeObject.getDocument());
+                    BsonValue id = result.getInsertedId();
+                    tfidf.addSample(id, recipeObject.getReviewText());
+                } catch (ArrayIndexOutOfBoundsException e ){   //shows where txt file doesn't fit format
+                    System.out.println("Encountered issue on line "+ lineCounter +". Sending you back to the main menu..."); //error catch statement
+                    mainMenu();
                 }
             }
+            tfidf.calculateIDF();
         } catch (IOException e) {
             System.out.println("IOException occurred. Sending you back to the main menu...");
             goToMenu();
         } 
+        // Parse the recipe_review_train.txt
+        String reviewTXTFile = "src/main/resources/recipe_review_train.txt";
+        String reviewLine;
+        try (BufferedReader br = new BufferedReader(new FileReader(reviewTXTFile))) {
+            // Skip the first header line
+            br.readLine();
+            while ((reviewLine = br.readLine()) != null) {
+                String[] reviewData = reviewLine.split(delimiter);
+                String review = reviewData[0];
+                String sentiment = reviewData[1];
+                RecipeReview reviewObject = new RecipeReview(review, sentiment);
+                InsertOneResult result = reviewDatabase.addToDatabase(reviewObject.getDocument());
+                classifier.addSample(result.getInsertedId(), reviewObject);
+            }
+            classifier.train();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("IOException occurred. Sending you back to the main menu...");
+            mainMenu();
+        }
     }
 
     /*
-     * This method is called whenever user selects the Exit option. This method deletes the collection created in the database.
+     * This method is called whenever user selects the Exit option. This method 
+     * deletes the collection created in the database.
      */
     public void shutDown() {
-
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteCollection();
-        Database reviewDatabase = new Database("recipe_app_database", "review_data");
-        reviewDatabase.deleteCollection();
-        // System.out.println("Trying to delete...");
 
+        Database reviewDatabase = new Database("recipe_app_database", "recipe_reviews");
+        reviewDatabase.deleteCollection();
+        // System.out.println("Trying to delete...");  //for error testing
     }
 
-    public void addRecipeToDatabase() {
-        
-        try (Scanner scanner = new Scanner(System.in)) {
+    public void addRecipeToDatabase(Scanner scanner) {
+
             System.out.println("Please enter the name of the recipe");
             String newRecipeName = scanner.nextLine();
             System.out.println("Please enter review of the recipe");
@@ -99,386 +117,95 @@ public class Menu {
             Recipe userRecipe = new Recipe(newRecipeName, newThumbsUp, newThumbsDown, newReviewContent);
             Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
 
-            recipeDatabase.addToDatabase(userRecipe.getDocument());
 
-            goToMenu();
-        }
-        
-    }
-
-    public void printRecipeFromDatabase(){        
-        String txtFile = "src/main/resources/test_recipe_metadata.txt";
-        String line;
-        String delimiter = "#";
-        String recipeChoice;
-        ArrayList<String[]> recipeChoiceData = new ArrayList<>();
-        /* creates an arrayList of string arrays so that each individual array can be called/incremented through at will to
-         * get data.
-         */
-        try(Scanner scanner = new Scanner(System.in)){
-            System.out.println("Please enter the recipe you would like to see reviews for: ");
-            recipeChoice = scanner.nextLine();
-            int lineCounter = 0;
-            try(BufferedReader br = new BufferedReader(new FileReader(txtFile))){
-                while((line = br.readLine()) != null)
-                    try {
-                        lineCounter++;
-                        String[] recipeData = line.split(delimiter);
-                        if(recipeData[0].equals(recipeChoice)){
-                            recipeChoiceData.add(recipeData);
-                            //adds the string array of review content to the arraylist
-                        }
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Out of bounds at line: " + lineCounter + ", error occurred."
-                                            +"Sending you back to the main menu...");
-                        goToMenu();
-                        
-                    }
-            } catch (IOException e) {
-                System.out.println("IOException occurred. Sending you back to the main menu...");
-                goToMenu();
-            }
-            System.out.print("\033[H\033[2J");
-            System.out.flush();
-            System.out.println("Please select what you would like to see from the " + recipeChoice  
-                                +" recipe from the menu by choosing an integer associated with each option:" 
-                                +"\n1.) Scroll through reviews"
-                                +"\n2.) See the thumbs up/down count and average data"
-                                +"\n3.) See whether this is a good or bad recipe based on the reviews"
-                                +"\n4.) Return to main menu.");
-            int menuChoice = scanner.nextInt();
-            switch(menuChoice){
-                case 1:
-                    System.out.print("\033[H\033[2J");
-                    System.out.flush();
-                    System.out.println("Collecting review content...");
-                    seeReviews(recipeChoiceData);
-                    break;
-                case 2:
-                    System.out.print("\033[H\033[2J");
-                    System.out.flush();
-                    System.out.println("Counting thumbs...");
-                    seeThumbsData(recipeChoiceData);
-                    break;
-                case 3:
-                    System.out.print("\033[H\033[2J");
-                    System.out.flush();
-                    System.out.println("Determining recipe tastiness...");
-                    getRecipeTastiness(recipeChoiceData);
-                    break;
-                case 4:
-                    System.out.println("Sending you back to the menu...");
-                    goToMenu();
-                    break;
-                default:
-                    System.out.println("Invalid choice! Sending you back to the menu...");
-                    goToMenu();
-                    break;
-            }
-        }
-    }
-
-    public void getRecipeTastiness(ArrayList<String[]> recipeChoiceData){
-        String goodFile = "src/main/resources/goodWords.txt";
-        String badFile = "src/main/resources/badWords.txt";
-        String line;
-        int lineCounter;
-        int goodWordCount = 0;
-        int badWordCount = 0;
-        try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
-            lineCounter = 0;
-            while((line = br.readLine()) != null) //sets the line being read to the next line
-                try {
-                    lineCounter++; //shows up if there is an error, tells user which line of the document the error occurred on
-                    for(String[] review : recipeChoiceData){ //for every review on the selected recipe
-                        String reviewWords = review[3]; // set reviewWords to the review text
-                        if(reviewWords.contains(line)){ // if reviewWords has the current good word being read
-                            goodWordCount += 1; // it will increment the amount of positive words in the review
-                        }
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
-                    goToMenu();
-                }
-        } catch (IOException e) {
-            System.out.println("Problem reading file. Sending you back to the menu...");
-            goToMenu();
-        }
-        
-        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){ // same as above code block, but with the negative words
-            lineCounter = 0;
-            while((line = br.readLine()) != null)
-                try {
-                    lineCounter++;
-                    for(String[] review : recipeChoiceData){
-                        String reviewWords = review[3];
-                        if(reviewWords.contains(line)){
-                        badWordCount += 1;
-                        }
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
-                }
-        } catch (IOException e) {
-            System.out.println("Problem reading file. Sending you back to the menu...");
-            goToMenu();
-        }
-        /*if there are significantly more good words than bad, the recipe is tasty.
-         * the number values in the if statements can be tweaked to reflect the actuality of good/neutral/bad
-         */
-        if((goodWordCount - badWordCount) >= 2){
-            System.out.println("This recipe is tasty.");
-            goToMenu();
-        }
-        /*if there isn't enough difference between the amount of good and bad words, the recipe is neutral.
-         * the recipe will also be neutral if there are no hits for the words in the lists.
-         */
-        if((goodWordCount - badWordCount) <= 1 && (goodWordCount - badWordCount) >= -1){
-            System.out.println("This recipe is neutral - there isn't enough "
-                                +"difference between the amount of positive and negative reviews.");
-            goToMenu();
-        }
-        /*if there are significantly more bad words than good, the recipe is not tasty
-         * again, the values in all these if statements can be tweaked, just as long as every possible integer is covered,
-         so certain values don't throw errors. */
-        if((goodWordCount - badWordCount) <= -2){
-            System.out.println("This recipe is not tasty.");
-            goToMenu();
-        }
-    }
-
-    public void goToMenu(){
-        String choice = "o";
-        String breaker = "t";
-        System.out.println("");
-        try(Scanner scanner = new Scanner(System.in)){
-            while (breaker.equals("t")) 
-                System.out.println("Type the letter \"x\" to return to the menu.");
-                choice = scanner.nextLine();
-                if (choice.equals("x")){ //if anything other than 'y' is input, the while loop breaks
-                    breaker = "f";
-                } 
-        }        
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-        mainMenu();
-    }
-
-    public void seeReviews(ArrayList<String[]> recipeChoiceData) {
-        String choice = "y";
-        String goodFile = "src/main/resources/goodWords.txt";
-        String badFile = "src/main/resources/badWords.txt";
-        String line;
-        int lineCounter;
-        int goodWordCount = 0;
-        int badWordCount = 0;
-        try(Scanner scanner = new Scanner(System.in)){
-            System.out.println("Review text will now be presented for the recipe you have selected." 
-                                +"Input 'y' to see the next review for the recipe, or any other letter to return to the menu.");
-            while(choice.equals("y")) //if anything other than 'y' is input, the while loop breaks
-                try {
-                    //this block of code is very similar to the one above, but it loops through and does it one at a time
-                    for(String[] recipe : recipeChoiceData){
-                        try(BufferedReader br = new BufferedReader(new FileReader(goodFile))){
-                            lineCounter = 0;
-                            while((line = br.readLine()) != null)
-                                try {
-                                    lineCounter++;
-                                    for(String[] review : recipeChoiceData){
-                                        String reviewWords = review[3];
-                                        if(reviewWords.contains(line)){
-                                        goodWordCount += 1;
-                                        }
-                                    }
-                                } catch (ArrayIndexOutOfBoundsException e) {
-                                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
-                                }
-                        } catch (IOException e) {
-                            System.out.println("Problem reading file. Sending you back to the menu...");
-                            goToMenu();
-                        }
-                        
-                        try(BufferedReader br = new BufferedReader(new FileReader(badFile))){
-                            lineCounter = 0;
-                            while((line = br.readLine()) != null)
-                                try {
-                                    lineCounter++;
-                                    for(String[] review : recipeChoiceData){
-                                        String reviewWords = review[3];
-                                        if(reviewWords.contains(line)){
-                                        badWordCount += 1;
-                                        }
-                                    }
-                                } catch (ArrayIndexOutOfBoundsException e) {
-                                    System.out.println("Error on line " + lineCounter +". Sending you back to the menu...");
-                                }
-                        } catch (IOException e) {
-                            System.out.println("Problem reading file. Sending you back to the menu...");
-                            goToMenu();
-                        }
-                        
-                        System.out.println(recipe[3]);
-                        
-                        if((goodWordCount - badWordCount) >= 2){
-                            System.out.println("This review says that the recipe is tasty.");
-                        }
-
-                        if((goodWordCount - badWordCount) <= 1 && (goodWordCount - badWordCount) >= -1){
-                            System.out.println("This review is neutral about the tastiness of the recipe.");
-                        }
-
-                        if((goodWordCount - badWordCount) <= -2){
-                            System.out.println("This review says that the recipe is not tasty.");
-                        }
-
-                        System.out.println("\nPlease enter 'y' to see another review, or any other key to exit to the menu.");
-                        choice = scanner.nextLine();
-                    }
-                } catch (IndexOutOfBoundsException e) {
-                    System.out.println("Ran out of review text. Returning to main menu.");
-                    goToMenu();
-                }
-            mainMenu();
-        }
-    }
-    public void seeThumbsData(ArrayList<String[]> recipeChoiceData){
-        System.out.println("Presenting total thumbs up/down count for all reviews for the selected recipe, " 
-                            +"as well as weighted average rating based on thumbs up count...");
-        int thumbUpCount = 0;
-        int thumbDownCount = 0;
-        for(String[] review : recipeChoiceData){
-            thumbUpCount += Integer.parseInt(review[1]);
-            thumbDownCount += Integer.parseInt(review[2]);
-        }
-        System.out.println("Total thumbs up count for all reviews for the " + recipeChoiceData.get(0)[0] + " recipe:"
-                            +"\n" + thumbUpCount
-                            +"\nTotal thumbs down: "
-                            +"\n" + thumbDownCount);
-        int totalThumbs = thumbUpCount + thumbDownCount;
-        //if the total thumb count on a review is less than 2, discount it
-        thumbUpCount = 0;
-        thumbDownCount = 0;
-        int up = 0;
-        int down = 0;
-        for(String[] review : recipeChoiceData){
-            up = Integer.parseInt(review[1]);
-            down = Integer.parseInt(review[2]);
-            if(up + down >= 2){
-                thumbUpCount += up;
-                thumbDownCount += down;
-            }
-        }
-        double positiveRatedPct = (thumbUpCount / totalThumbs) * 100;
-        double negativeRatedPct = (thumbDownCount / totalThumbs) * 100;
-        double neutralRatedPct = ((thumbUpCount + thumbDownCount) / totalThumbs) * 100;
-        System.out.println("The percentage of positively rated reviews is: " + positiveRatedPct
-                            +"\nThe percentage of negatively rated reviews is: " + negativeRatedPct
-                            +"\nThe percentage of neutrally rated reviews"
-                            +" or reviews that do not have enough ratings to count is: " + neutralRatedPct);
-        goToMenu();
-    }
- 
-
-    // Method to find reviews for a  specific recipe
-    public void findRecipeOtherReviews() {
-        String recipeFile = "src/main/resources/test_recipe_metadata.txt";  
-        String line;
-        String delimiter = "#"; 
-
-        // Scanner to get the recipe name from user input
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Please enter the name of the recipe to search for: ");
-        String recipeSearchName = scanner.nextLine();  // Read the recipe name input by the user
-        System.out.println("Searching for " + recipeSearchName + "...\n");
-
-        try (BufferedReader br = new BufferedReader(new FileReader(recipeFile))) {
-            
-            br.readLine();
-            
-            int reviewCounter = 1;
-            // Loop through each line in the file
-            boolean foundRecipe = false;
-            while ((line = br.readLine()) != null) {
-                // Split the line by the delimiter "#"
-                String[] recipeData = line.split(delimiter);
-                
-                // Check if the line contains at least four elements (recipe name, thumbs up, thumbs down, and review text)
-                if (recipeData.length >= 4) {
-                    String recipeName = recipeData[0].strip();
-                    // Compare the input recipe name with the recipe name from the file 
-                    if (recipeSearchName.equalsIgnoreCase(recipeName)) {
-                        if (foundRecipe == true) {
-                            System.out.println("Here are the reviews for " + recipeName + ":\n");
-                            foundRecipe = true; 
-                        }
-                        // Print review text
-                        System.out.println("Review " + reviewCounter + ": "+ recipeData[3].trim() + "\n");
-                        reviewCounter++;
-                    }
-                }
-            }
-
-            // If no recipe was found by the name
-            if (!foundRecipe) {
-                System.out.println("Recipe not found!");
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }scanner.close();       
-    
+            InsertOneResult result = recipeDatabase.addToDatabase(userRecipe.getDocument());
+            tfidf.addSample(result.getInsertedId(), userRecipe.getReviewText());
+            System.out.println("Recipe " + newRecipeName + " successfully added to the database!");
 
     }
 
-
-    public void mainMenu(){
-        try(Scanner scanner = new Scanner(System.in)){
-            System.out.println("Hello! Welcome to the recipe app!");
-        
-            System.out.println("Please select one of the following options:"
-                            +"\n1.) Add a recipe review to the database."
-                            +"\n2.) Get details of a recipe from the database."
-                            +"\n3.) Exit the app");
-            
-            int menuChoice = scanner.nextInt();
-
-            switch(menuChoice){
-                case 1:
-                    System.out.print("\033[H\033[2J");
-                    System.out.flush();
-                    System.out.println("Getting recipe add function...");
-                    addRecipeToDatabase();
-                    break;
-                case 2:
-                    System.out.print("\033[H\033[2J");
-                    System.out.flush();
-                    System.out.println("Getting print recipe data function...");
-                    printRecipeFromDatabase();
-                    break;
-                case 3:
-                    System.out.println("Thank you for using the recipe app!");
-                    shutDown();
-                    break;
-                default:
-                    System.out.println("Invalid choice! Please try again. Resetting menu...");
-                    goToMenu();
-                    break;
-            }
-
+    public void findSimilarRecipes(Scanner scanner) {
+        System.out.println("Please enter review of the recipe");
+        String newReviewContent = scanner.nextLine();
+        System.out.println("How many recipes would you like to see?");
+        int numRecommendations = scanner.nextInt();
+        System.out.println("Finding similar recipes...");
+        RecipeRecommender recommender = new RecipeRecommender(processor, tfidf);
+        ArrayList<Recipe> recommendations = recommender.recommendRecipes(newReviewContent, numRecommendations);
+        for (Recipe recipe : recommendations) {
+            System.out.println("Name: " + recipe.getRecipeName());
+            System.out.println("Review: " + recipe.getReviewText());
+            System.out.println("Thumbs Up: " + recipe.getThumbUpCount());
+            System.out.println("Thumbs Down: " + recipe.getThumbDownCount());
         }
+
     }
+
+    public void classifyRecipeReview(Scanner scanner) {
+        System.out.println("Please enter the review of the recipe");
+        String review = scanner.nextLine();
+        String sentiment = classifier.classify(review);
+        System.out.println("The sentiment of the review is: " + sentiment);
+    }
+
+
     public static void main(String[] args) {
-
         System.out.println("Initializing the recipe app...");
-        
         //Call the startUp method
         Menu menu = new Menu();
         menu.startUp();
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-        menu.mainMenu();
+        menu.mainMenu();  //actual menu, made navigatable from IO errors
         // Ideally you want to make this menu an endless loop until the user enters to exit the app. (done)
         // When they select the option, you call the shutDown method. (done)
+    }
 
+    public void mainMenu(){   
+        System.out.println("Hello! Welcome to the recipe app!");
+        Scanner scanner = new Scanner(System.in);
+            int choice = 0;
+            while (choice != 5) {
+                System.out.println("Please select one of the following options:"
+                                +"\n1.) Add a recipe review to the database."
+                                +"\n2.) Get details of a recipe from the database."
+                                +"\n3.) Find similar recipes."
+                                +"\n4.) Classify recipe review."
+                                +"\n5.) Exit the app");
+                System.out.print("Enter your choice: ");
+                if (scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                } else {
+                    System.out.println("Invalid input. Please enter a number.");
+                    scanner.nextLine();
+                    continue;
+                }
+                switch(choice){
+                    case 1:
+                        System.out.println("Getting recipe addition function...");
+                        addRecipeToDatabase(scanner);
+                        break;
+                    case 2:
+                        System.out.println("Getting recipe printing function...");
+                        //printRecipeFromDatabase();
+                        System.out.println("This function is still under construction, please pick another!");
+                        break;
+                    case 3:
+                        System.out.println("Getting similar recipe function...");
+                        findSimilarRecipes(scanner);
+                        break;
+                    case 4:
+                        System.out.println("Getting recipe classifier function...");
+                        classifyRecipeReview(scanner);
+                        break;
+                    case 5:
+                        System.out.println("Goodbye! Thank you for using the recipe app!");
+                        shutDown();
+                        scanner.close();
+                        break;
+                    default:
+                        System.out.println("Invalid choice! Please try again. Resetting menu...");
+                        break;
+                }
+            }
     }
 }

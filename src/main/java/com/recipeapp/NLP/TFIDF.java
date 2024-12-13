@@ -1,13 +1,13 @@
-package com.recipeapp.NLP;
+package com.recipeapp.nlp;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.ArrayList;
 import org.bson.BsonValue;
 
 public class TFIDF {
- private HashSet<String> vocabulary = new HashSet<>();
+
+    private HashSet<String> vocabulary = new HashSet<>();
     private HashMap<String, Float> idf = new HashMap<>();
     private HashMap<BsonValue, HashMap<String, Integer>> tf = new HashMap<>();
     private Processor processor;

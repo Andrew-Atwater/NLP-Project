@@ -1,36 +1,31 @@
-package com.recipeapp.NLP;
+package com.recipeapp.nlp;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.bson.BsonValue;
-import com.recipeapp.recipe.recipeReview;
+
+import com.recipeapp.recipe.RecipeReview;
 
 
-public class recipeClassifier {
-
+public class RecipeClassifier {
     private Processor processor;
     private HashSet<String> vocabulary = new HashSet<>();
-    
     // You want to create as many word count hashmaps, probability hash maps, and attributes to store the count
     //  as the number of classes in your dataset. For example, if your dataset has three types of reviews, tasty, 
     // nottasty, and neutral, you would create three hashmaps for word count, for probabilities, and three attributes 
     // to store the count of each type of review.
 
-    private int numtastyReviews = 0;
-    private int numnottastyReviews = 0;
+    private int numPositiveReviews = 0;
+    private int numNegativeReviews = 0;
     private int totalReviews = 0;
-
-    private HashMap<String, Integer> tastyWordCount = new HashMap<>();
-    private HashMap<String, Integer> nottastyWordCount = new HashMap<>();
-
-    private HashMap<String, Double> tastyProbabilities = new HashMap<>();
-    private HashMap<String, Double> nottastyProbabilities = new HashMap<>();
-
-    public recipeClassifier(Processor processor) {
+    private HashMap<String, Integer> positiveWordCount = new HashMap<>();
+    private HashMap<String, Integer> negativeWordCount = new HashMap<>();
+    private HashMap<String, Double> positiveProbabilities = new HashMap<>();
+    private HashMap<String, Double> negativeProbabilities = new HashMap<>();
+    public RecipeClassifier(Processor processor) {
         this.processor = processor;
     }
-
     /*
      * This method adds a review from the training set and updates the word count
      * 
@@ -39,18 +34,17 @@ public class recipeClassifier {
      * 
      * @return void
      */
-    public void addSample(BsonValue id, recipeReview review) {
-        String[] words = processor.processText(review.getReviewText());
+    public void addSample(BsonValue id, RecipeReview review) {
+        String[] words = processor.processText(review.getReview());
         if (review.getSentiment().equals("tasty")) {
-            updateWordCount(tastyWordCount, words);
-            numtastyReviews++;
+            updateWordCount(positiveWordCount, words);
+            numPositiveReviews++;
         } else {
             updateWordCount(nottastyWordCount, words);
             numnottastyReviews++;
         }
         totalReviews++;
     }
-
     /*
      * This method updates the word count hashmaps which is called by the addSample method
      * 
@@ -69,7 +63,6 @@ public class recipeClassifier {
             vocabulary.add(word);
         }
     }
-
     /*
      * In this method we calculate the prior probabilities of each class and the
      * 
@@ -87,7 +80,6 @@ public class recipeClassifier {
             nottastyProbabilities.put(word, nottastyProbability);
         }
     }
-
     /*
      * This method calculates the probability of a seeing word in given a class
      * 
@@ -104,7 +96,6 @@ public class recipeClassifier {
             return 1.0 / (totalWords + vocabulary.size());
         }
     }
-
     /*
      * This method classifies a review as tasty or nottasty. It calculates the
      * score for each class and returns the class with the highest score
@@ -113,23 +104,22 @@ public class recipeClassifier {
      * 
      * @return String: The classification of the review
      */
-
     public String classify(String review) {
         String[] words = processor.processText(review);
-        double tastyScore = Math.log((double) numtastyReviews / totalReviews);
-        double nottastyScore = Math.log((double) numnottastyReviews / totalReviews);
+
+        double positiveScore = Math.log((double) numPositiveReviews / totalReviews);
+        double negativeScore = Math.log((double) numNegativeReviews / totalReviews);
 
         for (String word : words) {
             tastyScore += Math.log(tastyProbabilities.getOrDefault(word, 1.0 / (tastyWordCount.size() + vocabulary.size())));
             nottastyScore += Math.log(nottastyProbabilities.getOrDefault(word, 1.0 / (nottastyWordCount.size() + vocabulary.size())));
         }
 
-        if (tastyScore > nottastyScore) {
+        if (positiveScore > negativeScore) {
             return "tasty";
         } else {
-            return "nottasty";
+            return "not tasty";
+
         }
     }
-
-
 }

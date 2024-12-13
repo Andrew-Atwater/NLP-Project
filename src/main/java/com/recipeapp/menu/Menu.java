@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
 import org.bson.BsonValue;
 
 import com.mongodb.client.result.InsertOneResult;
@@ -29,6 +30,7 @@ public class Menu {
      */
     public void startUp() {
         // Create a collection in the database to store Recipe objects
+
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.createCollection();
         Database reviewDatabase = new Database("recipe_app_database", "recipe_reviews");
@@ -52,6 +54,7 @@ public class Menu {
                     String reviewContent = recipeData[3];
                     // System.out.println(line);
                     Recipe recipeObject = new Recipe(recipeNames, thumbsUp, thumbsDown, reviewContent);
+
                     InsertOneResult result = recipeDatabase.addToDatabase(recipeObject.getDocument());
                     BsonValue id = result.getInsertedId();
                     tfidf.addSample(id, recipeObject.getReviewText());
@@ -63,7 +66,7 @@ public class Menu {
             tfidf.calculateIDF();
         } catch (IOException e) {
             System.out.println("IOException occurred. Sending you back to the main menu...");
-            mainMenu();
+            goToMenu();
         } 
         // Parse the recipe_review_train.txt
         String reviewTXTFile = "src/main/resources/recipe_review_train.txt";
@@ -94,6 +97,7 @@ public class Menu {
     public void shutDown() {
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteCollection();
+
         Database reviewDatabase = new Database("recipe_app_database", "recipe_reviews");
         reviewDatabase.deleteCollection();
         // System.out.println("Trying to delete...");  //for error testing
@@ -112,6 +116,7 @@ public class Menu {
 
             Recipe userRecipe = new Recipe(newRecipeName, newThumbsUp, newThumbsDown, newReviewContent);
             Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
+
 
             InsertOneResult result = recipeDatabase.addToDatabase(userRecipe.getDocument());
             tfidf.addSample(result.getInsertedId(), userRecipe.getReviewText());
@@ -142,6 +147,7 @@ public class Menu {
         String sentiment = classifier.classify(review);
         System.out.println("The sentiment of the review is: " + sentiment);
     }
+
 
     public static void main(String[] args) {
         System.out.println("Initializing the recipe app...");

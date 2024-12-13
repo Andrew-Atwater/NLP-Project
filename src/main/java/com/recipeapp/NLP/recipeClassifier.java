@@ -12,9 +12,10 @@ public class RecipeClassifier {
     private Processor processor;
     private HashSet<String> vocabulary = new HashSet<>();
     // You want to create as many word count hashmaps, probability hash maps, and attributes to store the count
-    //  as the number of classes in your dataset. For example, if your dataset has three types of reviews, positive, 
-    // negative, and neutral, you would create three hashmaps for word count, for probabilities, and three attributes 
+    //  as the number of classes in your dataset. For example, if your dataset has three types of reviews, tasty, 
+    // nottasty, and neutral, you would create three hashmaps for word count, for probabilities, and three attributes 
     // to store the count of each type of review.
+
     private int numPositiveReviews = 0;
     private int numNegativeReviews = 0;
     private int totalReviews = 0;
@@ -39,8 +40,8 @@ public class RecipeClassifier {
             updateWordCount(positiveWordCount, words);
             numPositiveReviews++;
         } else {
-            updateWordCount(negativeWordCount, words);
-            numNegativeReviews++;
+            updateWordCount(nottastyWordCount, words);
+            numnottastyReviews++;
         }
         totalReviews++;
     }
@@ -68,15 +69,15 @@ public class RecipeClassifier {
      * @return void
      */
     public void train() {
-        int totalPositiveWords = positiveWordCount.values().stream().mapToInt(Integer::intValue).sum();
-        int totalNegativeWords = negativeWordCount.values().stream().mapToInt(Integer::intValue).sum();
+        int totaltastyWords = tastyWordCount.values().stream().mapToInt(Integer::intValue).sum();
+        int totalnottastyWords = nottastyWordCount.values().stream().mapToInt(Integer::intValue).sum();
 
         for (String word : vocabulary) {
-            double positiveProbability = calculateProbability(word, positiveWordCount, totalPositiveWords);
-            double negativeProbability = calculateProbability(word, negativeWordCount, totalNegativeWords);
+            double tastyProbability = calculateProbability(word, tastyWordCount, totaltastyWords);
+            double nottastyProbability = calculateProbability(word, nottastyWordCount, totalnottastyWords);
 
-            positiveProbabilities.put(word, positiveProbability);
-            negativeProbabilities.put(word, negativeProbability);
+            tastyProbabilities.put(word, tastyProbability);
+            nottastyProbabilities.put(word, nottastyProbability);
         }
     }
     /*
@@ -96,7 +97,7 @@ public class RecipeClassifier {
         }
     }
     /*
-     * This method classifies a review as positive or negative. It calculates the
+     * This method classifies a review as tasty or nottasty. It calculates the
      * score for each class and returns the class with the highest score
      * 
      * @param review: The review to classify
@@ -105,16 +106,20 @@ public class RecipeClassifier {
      */
     public String classify(String review) {
         String[] words = processor.processText(review);
+
         double positiveScore = Math.log((double) numPositiveReviews / totalReviews);
         double negativeScore = Math.log((double) numNegativeReviews / totalReviews);
+
         for (String word : words) {
-            positiveScore += Math.log(positiveProbabilities.getOrDefault(word, 1.0 / (positiveWordCount.size() + vocabulary.size())));
-            negativeScore += Math.log(negativeProbabilities.getOrDefault(word, 1.0 / (negativeWordCount.size() + vocabulary.size())));
+            tastyScore += Math.log(tastyProbabilities.getOrDefault(word, 1.0 / (tastyWordCount.size() + vocabulary.size())));
+            nottastyScore += Math.log(nottastyProbabilities.getOrDefault(word, 1.0 / (nottastyWordCount.size() + vocabulary.size())));
         }
+
         if (positiveScore > negativeScore) {
             return "tasty";
         } else {
             return "not tasty";
+
         }
     }
 }

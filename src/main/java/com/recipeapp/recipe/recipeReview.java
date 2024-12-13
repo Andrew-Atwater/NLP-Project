@@ -1,5 +1,7 @@
 package com.recipeapp.recipe;
 
+import org.bson.Document;
+
 public class recipeReview {
     private String reviewText;
     private String sentiment;
@@ -19,5 +21,12 @@ public class recipeReview {
     }
     public void setSentiment(String sentiment) {
         this.sentiment = sentiment;
+    }
+
+    public Document getDocument() {
+        Document document = new Document();
+        document.append("review", reviewText);
+        document.append("sentiment", sentiment);
+        return document;
     }
 }

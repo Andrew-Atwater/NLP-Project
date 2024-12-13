@@ -6,6 +6,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.InsertOneResult;
 
 public class Database {
 
@@ -25,14 +26,15 @@ public class Database {
 
     }
 
-    public void addToDatabase(Document document) {
+
+    public InsertOneResult addToDatabase(Document document) {
 
         try (MongoClient mongoClient = MongoClients.create(connectionString)) {
 
-            MongoDatabase recipeDatabase = mongoClient.getDatabase(this.databaseName);
-            MongoCollection<Document> recipeCollection = recipeDatabase.getCollection(this.collectionName);
+            MongoDatabase genericDatabase = mongoClient.getDatabase(this.databaseName);
+            MongoCollection<Document> genericCollection = genericDatabase.getCollection(this.collectionName);
 
-            recipeCollection.insertOne(document);
+            return genericCollection.insertOne(document);
 
         }
 

@@ -5,8 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import com.mongodb.client.result.InsertOneResult;
 import com.recipeapp.database.Database;
 import com.recipeapp.recipe.Recipe;
+import com.recipeapp.recipe.recipeReview;
+
+import com.recipeapp.NLP.recipeClassifier;
+import com.recipeapp.NLP.Processor;
 
 // import com.movieapp.database.Database;
 // import com.movieapp.movie.Movie;
@@ -19,6 +24,8 @@ import com.recipeapp.recipe.Recipe;
 
 public class Menu {
 
+    private Processor processor = new Processor("src/main/resources/listOfStopWords.txt");
+    private recipeClassifier classifier = new recipeClassifier(processor);
     /*
      * This method is called before showing the menu options to the user. It creates the necessary collections in the database.
      * It also parses the necessary CSV files and populatest the collection.
@@ -69,6 +76,34 @@ public class Menu {
             System.out.println("IOException occurred. Sending you back to the main menu...");
             mainMenu();
         } 
+        String reviewTXTFile = "src/main/resources/trainingData.txt";
+        String reviewLine;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(reviewTXTFile))) {
+            // Skip the first header line
+            br.readLine();
+            int counter = 0;
+            while ((reviewLine = br.readLine()) != null) {
+                try{
+                counter++;
+                String[] reviewData = reviewLine.split("#");
+                String review = reviewData[0];
+                String sentiment = reviewData[1];
+
+                recipeReview reviewObject = new recipeReview(review, sentiment);
+                InsertOneResult result = reviewDatabase.addToDatabase(reviewObject.getDocument());
+
+                classifier.addSample(result.getInsertedId(), reviewObject);
+                
+                }catch(ArrayIndexOutOfBoundsException e){
+                    e.printStackTrace();
+                    System.out.println("Error Line:" + counter);
+                }
+            }
+            classifier.train();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -79,30 +114,31 @@ public class Menu {
         Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
         recipeDatabase.deleteCollection();
         // System.out.println("Trying to delete...");
+        Database reviewDatabase = new Database("recipe_app_database", "review_data");
+        reviewDatabase.deleteCollection();
 
     }
 
-    public void addRecipeToDatabase() {
+    public void addRecipeToDatabase(Scanner scanner) {
 
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Please enter the name of the recipe");
-            String newRecipeName = scanner.nextLine();
-            System.out.println("Please enter review of the recipe");
-            String newReviewContent = scanner.nextLine();
-            System.out.println("Please enter the amount of likes on this review");
-            Integer newThumbsUp = Integer.parseInt(scanner.nextLine());
-            System.out.println("Please enter the amount of dislikes on this review");
-            Integer newThumbsDown = Integer.parseInt(scanner.nextLine());
+        System.out.println("Please enter the name of the recipe");
+        String newRecipeName = scanner.nextLine();
+        System.out.println("Please enter review of the recipe");
+        String newReviewContent = scanner.nextLine();
+        System.out.println("Please enter the amount of likes on this review");
+        Integer newThumbsUp = Integer.parseInt(scanner.nextLine());
+        System.out.println("Please enter the amount of dislikes on this review");
+        Integer newThumbsDown = Integer.parseInt(scanner.nextLine());
 
-            Recipe userRecipe = new Recipe(newRecipeName, newThumbsUp, newThumbsDown, newReviewContent);
-            Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
+        Recipe userRecipe = new Recipe(newRecipeName, newThumbsUp, newThumbsDown, newReviewContent);
+        Database recipeDatabase = new Database("recipe_app_database", "recipe_data");
 
-            recipeDatabase.addToDatabase(userRecipe.getDocument());
+        recipeDatabase.addToDatabase(userRecipe.getDocument());
 
-            mainMenu();
-        }
+        mainMenu();
+    }
         
-    }
+    
 
     public void printRecipeFromDatabase(){        
         String txtFile = "src/main/resources/test_recipe_metadata.txt";
@@ -113,9 +149,11 @@ public class Menu {
         /* creates an arrayList of string arrays so that each individual array can be called/incremented through at will to
          * get data.
          */
-        try(Scanner scanner = new Scanner(System.in)){
+        try(Scanner scanner = new Scanner(System.in)) {
             System.out.println("Please enter the recipe you would like to see reviews for: ");
             recipeChoice = scanner.nextLine();
+      
+        
             int lineCounter = 0;
             try(BufferedReader br = new BufferedReader(new FileReader(txtFile))){
                 while((line = br.readLine()) != null)
@@ -134,13 +172,16 @@ public class Menu {
             } catch (IOException e) {
                 System.out.println("IOException occurred. Sending you back to the main menu...");
                 mainMenu();
-            }
+            }  
             System.out.println("Please select what you would like to see from the " + recipeChoice  
                                 +" recipe from the menu by choosing an integer associated with each option:" 
                                 +"\n1.) Scroll through reviews"
                                 +"\n2.) See the thumbs up/down count and average data"
                                 +"\n3.) See whether this is a good or bad recipe based on the reviews"
                                 +"\n4.) Return to main menu.");
+            }catch(Exception e){
+                e.printStackTrace();
+        try(Scanner scanner = new Scanner(System.in)){
             int menuChoice = scanner.nextInt();
             switch(menuChoice){
                 case 1:
@@ -164,7 +205,24 @@ public class Menu {
                     mainMenu();
                     break;
             }
+        }catch(Exception a){
+            a.printStackTrace();
+        
         }
+            }
+        }
+
+    public void classifyRecipeReview() {
+        try(Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Please enter the review of the Recipe");
+            String review = scanner.nextLine();
+
+            String sentiment = classifier.classify(review);
+            System.out.println("The sentiment of the review is: " + sentiment);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    
     }
 
     public void getRecipeTastiness(ArrayList<String[]> recipeChoiceData){
@@ -406,26 +464,34 @@ public class Menu {
 
 
     public void mainMenu(){
-        try(Scanner scanner = new Scanner(System.in)){
+        try{
+            Scanner scanner = new Scanner(System.in);
+            int menuChoice = scanner.nextInt();
             System.out.println("Hello! Welcome to the recipe app!");
         
             System.out.println("Please select one of the following options:"
                             +"\n1.) Add a recipe review to the database."
                             +"\n2.) Get details of a recipe from the database."
-                            +"\n3.) Exit the app");
+                            +"\n3.)Classify a review."
+                            +"\n4.) Exit the app");
+
             
-            int menuChoice = scanner.nextInt();
+            
 
             switch(menuChoice){
                 case 1:
                     System.out.println("Getting recipe add function...");
-                    addRecipeToDatabase();
+                    addRecipeToDatabase(scanner);
                     break;
                 case 2:
                     System.out.println("Getting print recipe data function...");
                     printRecipeFromDatabase();
                     break;
                 case 3:
+                    classifyRecipeReview();
+                    mainMenu();
+                    break;
+                case 4:
                     System.out.println("Thank you for using the recipe app!");
                     shutDown();
                     break;
@@ -435,8 +501,11 @@ public class Menu {
                     break;
             }
 
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
+    
     public static void main(String[] args) {
 
         System.out.println("Initializing the recipe app...");

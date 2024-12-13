@@ -2,8 +2,9 @@ package com.recipeapp.nlp;
 
 import java.util.HashMap;
 import java.util.HashSet;
+
 import org.bson.BsonValue;
-import com.recipeapp.recipe.Recipe;
+
 import com.recipeapp.recipe.RecipeReview;
 
 
@@ -34,7 +35,7 @@ public class RecipeClassifier {
      */
     public void addSample(BsonValue id, RecipeReview review) {
         String[] words = processor.processText(review.getReview());
-        if (review.getSentiment().equals("positive")) {
+        if (review.getSentiment().equals("tasty")) {
             updateWordCount(positiveWordCount, words);
             numPositiveReviews++;
         } else {
@@ -111,9 +112,9 @@ public class RecipeClassifier {
             negativeScore += Math.log(negativeProbabilities.getOrDefault(word, 1.0 / (negativeWordCount.size() + vocabulary.size())));
         }
         if (positiveScore > negativeScore) {
-            return "positive";
+            return "tasty";
         } else {
-            return "negative";
+            return "not tasty";
         }
     }
 }

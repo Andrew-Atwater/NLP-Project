@@ -4,15 +4,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import com.recipeapp.database.Database;
-import com.recipeapp.recipe.Recipe;
+
 import org.bson.BsonValue;
+
 import com.mongodb.client.result.InsertOneResult;
-import com.recipeapp.recipe.RecipeReview;
-import com.recipeapp.nlp.TFIDF;
+import com.recipeapp.database.Database;
+import com.recipeapp.nlp.Processor;
 import com.recipeapp.nlp.RecipeClassifier;
 import com.recipeapp.nlp.RecipeRecommender;
-import com.recipeapp.nlp.Processor;
+import com.recipeapp.nlp.TFIDF;
+import com.recipeapp.recipe.Recipe;
+import com.recipeapp.recipe.RecipeReview;
 
 
 public class Menu {
@@ -152,15 +154,15 @@ public class Menu {
     }
 
     public void mainMenu(){   
-        System.out.println("Hello! Welcome to the movie app!");
+        System.out.println("Hello! Welcome to the recipe app!");
         Scanner scanner = new Scanner(System.in);
             int choice = 0;
             while (choice != 5) {
                 System.out.println("Please select one of the following options:"
                                 +"\n1.) Add a recipe review to the database."
                                 +"\n2.) Get details of a recipe from the database."
-                                +"\n3.) Find similar movies."
-                                +"\n4.) Classify movie review."
+                                +"\n3.) Find similar recipes."
+                                +"\n4.) Classify recipe review."
                                 +"\n5.) Exit the app");
                 System.out.print("Enter your choice: ");
                 if (scanner.hasNextInt()) {

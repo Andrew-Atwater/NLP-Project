@@ -1,9 +1,11 @@
 package com.recipeapp.nlp;
-import java.util.HashMap;
 import java.util.ArrayList;
-import com.recipeapp.recipe.Recipe;
-import com.recipeapp.database.Database;
+import java.util.HashMap;
+
 import org.bson.BsonValue;
+
+import com.recipeapp.database.Database;
+import com.recipeapp.recipe.Recipe;
 
 public class RecipeRecommender {
     private TFIDF tfidf;

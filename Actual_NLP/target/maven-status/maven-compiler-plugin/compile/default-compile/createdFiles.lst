@@ -1,0 +1,9 @@
+com/recipeapp/nlp/Processor.class
+com/recipeapp/recipe/RecipeReview.class
+com/recipeapp/nlp/RecipeClassifier.class
+com/recipeapp/nlp/TFIDF.class
+com/recipeapp/nlp/RecipeRecommender.class
+com/recipeapp/database/Database.class
+com/recipeapp/recipe/Recipe.class
+com/recipeapp/menu/Menu.class
+com/recipeapp/nlp/RecipeSummarizer.class

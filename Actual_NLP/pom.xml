@@ -1,0 +1,25 @@
+<project>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.recipeapp.menu</groupId>
+    <artifactId>RecipeApp</artifactId>
+    <version>0.0.4</version>
+
+    <properties>
+<maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+    </dependencies>
+
+
+
+</project>
